@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=felix
+Comment=A lightweight, fast file manager with built-in document tools
+Exec=felix
+Icon=felix
+Terminal=false
+Type=Application
+Categories=Utility;FileManager;
+Keywords=file;manager;explorer;document;viewer;
+StartupWMClass=felix

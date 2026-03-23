@@ -1,0 +1,15 @@
+#!/bin/bash
+# AppRun script for AppImage
+# Sets up the environment and launches felix
+
+APPDIR="$(dirname "$(readlink -f "$0")")"
+
+# Set up library paths
+export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH}"
+
+# Set up fontconfig
+export FONTCONFIG_PATH="${APPDIR}/etc/fonts"
+export FONTCONFIG_FILE="${APPDIR}/etc/fonts/fonts.conf"
+
+# Launch felix
+exec "${APPDIR}/usr/bin/felix" "$@"

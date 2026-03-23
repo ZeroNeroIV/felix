@@ -30,3 +30,29 @@ sevenz-rust = "0.6"
 
 [build-dependencies]
 slint-build = "1"
+
+# ─── cargo-deb packaging ────────────────────────────────────────────────────
+[package.metadata.deb]
+name = "felix"
+maintainer = "ZeroNeroIV"
+copyright = "2026, ZeroNeroIV"
+license-file = ["LICENSE", "0"]
+section = "utils"
+priority = "optional"
+depends = "$auto, libfontconfig1, libxkbcommon0, libwayland-client0, libwayland-cursor0"
+extended-description = """\
+A lightweight, fast file manager with built-in document tools. \
+Features macOS Finder-style UI, built-in markdown/PDF/DOCX/PPTX viewers, \
+archive browsing, and fast search powered by ripgrep."""
+assets = [
+    ["target/release/felix", "usr/bin/", "755"],
+    ["packaging/felix.desktop", "usr/share/applications/", "644"],
+]
+
+# ─── cargo-generate-rpm packaging ───────────────────────────────────────────
+[package.metadata.generate-rpm]
+name = "felix"
+assets = [
+    { source = "target/release/felix", dest = "/usr/bin/felix", mode = "0755" },
+    { source = "packaging/felix.desktop", dest = "/usr/share/applications/felix.desktop", mode = "0644" },
+]
