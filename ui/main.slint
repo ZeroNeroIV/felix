@@ -3,28 +3,31 @@ import { Button, LineEdit, HorizontalBox, VerticalBox, CheckBox } from "std-widg
 // ─── Design Tokens ──────────────────────────────────────────────────────────
 
 global Tokens {
-    // Surfaces
-    out property <color> bg-window: #ffffff;
-    out property <color> bg-sidebar: #f6f6f8;
-    out property <color> bg-toolbar: #f9f9fb;
-    out property <color> bg-header: #efeff3;
-    out property <color> bg-status: #efeff3;
-    out property <color> bg-row-alt: #f7f7f9;
+    // Surfaces — purple palette: #a393bf #9882ac #73648a #453750 #0c0910
+    out property <color> bg-window: #0c0910;
+    out property <color> bg-sidebar: #14101a;
+    out property <color> bg-toolbar: #1a1520;
+    out property <color> bg-header: #1e1826;
+    out property <color> bg-status: #1e1826;
+    out property <color> bg-row-alt: #16111d;
+    out property <color> bg-hover: #453750;
+    out property <color> bg-selected: #453750;
 
-    // Accent
-    out property <color> accent: #007aff;
-    out property <color> accent-soft: #007aff14;
-    out property <color> accent-text: #ffffff;
+    // Accent — purple spectrum
+    out property <color> accent: #9882ac;
+    out property <color> accent-soft: #45375066;
+    out property <color> accent-hover: #a393bf;
 
     // Text
-    out property <color> text-primary: #1d1d1f;
-    out property <color> text-secondary: #6e6e73;
-    out property <color> text-tertiary: #aeaeb2;
-    out property <color> text-on-accent: #ffffff;
+    out property <color> text-primary: #cdc0df;
+    out property <color> text-secondary: #8a7898;
+    out property <color> text-tertiary: #6a5a78;
+    out property <color> text-on-accent: #0c0910;
+    out property <color> text-header: #9882ac;
 
     // Borders
-    out property <color> border: #d2d2d7;
-    out property <color> border-subtle: #e5e5ea;
+    out property <color> border: #453750;
+    out property <color> border-subtle: #2a2233;
 
     // Fonts
     out property <length> font-xs: 11px;
@@ -82,7 +85,7 @@ component Sidebar {
             for item in root.items : Rectangle {
                 height: 30px;
                 border-radius: 6px;
-                background: item.path == root.active-path ? Tokens.accent-soft : transparent;
+                background: item.path == root.active-path ? Tokens.bg-hover : transparent;
 
                 HorizontalBox {
                     padding-left: 10px;
@@ -97,7 +100,7 @@ component Sidebar {
                         text: item.name;
                         font-size: Tokens.font-md;
                         font-weight: item.path == root.active-path ? 600 : 400;
-                        color: item.path == root.active-path ? Tokens.accent : Tokens.text-primary;
+                        color: item.path == root.active-path ? Tokens.accent-hover : Tokens.text-primary;
                         vertical-alignment: center;
                     }
                 }
@@ -126,7 +129,7 @@ component Sidebar {
                 visible: item.section == "devices";
                 height: 30px;
                 border-radius: 6px;
-                background: item.path == root.active-path ? Tokens.accent-soft : transparent;
+                background: item.path == root.active-path ? Tokens.bg-hover : transparent;
 
                 HorizontalBox {
                     padding-left: 10px;
@@ -141,7 +144,7 @@ component Sidebar {
                         text: item.name;
                         font-size: Tokens.font-md;
                         font-weight: item.path == root.active-path ? 600 : 400;
-                        color: item.path == root.active-path ? Tokens.accent : Tokens.text-primary;
+                        color: item.path == root.active-path ? Tokens.accent-hover : Tokens.text-primary;
                         vertical-alignment: center;
                     }
                 }
@@ -356,7 +359,7 @@ component FileList {
                         Text {
                             text: entry.size;
                             font-size: Tokens.font-sm;
-                            color: index == root.selected-index ? #ccddff : Tokens.text-secondary;
+                            color: index == root.selected-index ? Tokens.text-primary : Tokens.text-secondary;
                             horizontal-alignment: right;
                             min-width: 70px;
                             preferred-width: 90px;
@@ -367,7 +370,7 @@ component FileList {
                         Text {
                             text: entry.modified;
                             font-size: Tokens.font-sm;
-                            color: index == root.selected-index ? #ccddff : Tokens.text-secondary;
+                            color: index == root.selected-index ? Tokens.text-primary : Tokens.text-secondary;
                             horizontal-alignment: right;
                             min-width: 100px;
                             preferred-width: 150px;
