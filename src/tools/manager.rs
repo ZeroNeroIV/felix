@@ -1,9 +1,11 @@
 //! Tool manager — handles loading/unloading of feature-gated tools
 
+#[allow(dead_code)]
 pub struct ToolManager {
     enabled_tools: Vec<String>,
 }
 
+#[allow(dead_code)]
 impl ToolManager {
     pub fn new() -> Self {
         Self {

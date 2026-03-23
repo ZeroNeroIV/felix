@@ -4,7 +4,7 @@ slint::include_modules!();
 
 use crate::fs::browser;
 use std::cell::RefCell;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 /// Navigation state for back/forward history
@@ -231,7 +231,7 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         let files = files_ref.borrow();
 
         if query.is_empty() {
-            let slint_files: Vec<FileEntry> = files.iter().map(|e| to_slint_entry(e)).collect();
+            let slint_files: Vec<FileEntry> = files.iter().map(to_slint_entry).collect();
             let model: slint::ModelRc<FileEntry> =
                 Rc::new(slint::VecModel::from(slint_files)).into();
             window.set_files(model);
@@ -239,10 +239,9 @@ pub fn launch() -> Result<(), slint::PlatformError> {
             let filtered: Vec<FileEntry> = files
                 .iter()
                 .filter(|e| e.name.to_lowercase().contains(&query.to_lowercase()))
-                .map(|e| to_slint_entry(e))
+                .map(to_slint_entry)
                 .collect();
-            let model: slint::ModelRc<FileEntry> =
-                Rc::new(slint::VecModel::from(filtered)).into();
+            let model: slint::ModelRc<FileEntry> = Rc::new(slint::VecModel::from(filtered)).into();
             window.set_files(model);
         }
     });
@@ -259,18 +258,18 @@ fn load_directory(
     window: &MainWindow,
     nav: &Rc<RefCell<NavState>>,
     files_cache: &Rc<RefCell<Vec<browser::FileEntry>>>,
-    path: &PathBuf,
+    path: &Path,
 ) {
     match browser::list_directory(path) {
         Ok(entries) => {
             // Update navigation
-            nav.borrow_mut().navigate(path.clone());
+            nav.borrow_mut().navigate(path.to_path_buf());
 
             // Update cache
             *files_cache.borrow_mut() = entries.clone();
 
             // Convert to Slint models
-            let slint_files: Vec<FileEntry> = entries.iter().map(|e| to_slint_entry(e)).collect();
+            let slint_files: Vec<FileEntry> = entries.iter().map(to_slint_entry).collect();
             let model: slint::ModelRc<FileEntry> =
                 Rc::new(slint::VecModel::from(slint_files)).into();
 

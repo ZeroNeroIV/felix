@@ -2,18 +2,22 @@
 
 use std::path::Path;
 
-pub fn copy(src: &Path, dst: &Path) -> Result<(), std::io::Error> {
+#[allow(dead_code)]
+pub fn copy(_src: &Path, _dst: &Path) -> Result<(), std::io::Error> {
     todo!()
 }
 
-pub fn move_file(src: &Path, dst: &Path) -> Result<(), std::io::Error> {
+#[allow(dead_code)]
+pub fn move_file(_src: &Path, _dst: &Path) -> Result<(), std::io::Error> {
     todo!()
 }
 
-pub fn delete(path: &Path) -> Result<(), std::io::Error> {
+#[allow(dead_code)]
+pub fn delete(_path: &Path) -> Result<(), std::io::Error> {
     todo!()
 }
 
-pub fn rename(old: &Path, new: &Path) -> Result<(), std::io::Error> {
+#[allow(dead_code)]
+pub fn rename(_old: &Path, _new: &Path) -> Result<(), std::io::Error> {
     todo!()
 }

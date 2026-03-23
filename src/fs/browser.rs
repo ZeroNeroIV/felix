@@ -65,7 +65,14 @@ impl FileEntry {
                         let day = (remaining_days % 30) + 1;
                         let hours = (secs % 86400) / 3600;
                         let minutes = (secs % 3600) / 60;
-                        format!("{:04}-{:02}-{:02} {:02}:{:02}", years, months + 1, day, hours, minutes)
+                        format!(
+                            "{:04}-{:02}-{:02} {:02}:{:02}",
+                            years,
+                            months + 1,
+                            day,
+                            hours,
+                            minutes
+                        )
                     }
                     Err(_) => "Unknown".to_string(),
                 }
@@ -108,12 +115,10 @@ pub fn list_directory(path: &Path) -> Result<Vec<FileEntry>, std::io::Error> {
     }
 
     // Sort: directories first, then alphabetical
-    entries.sort_by(|a, b| {
-        match (a.is_dir, b.is_dir) {
-            (true, false) => std::cmp::Ordering::Less,
-            (false, true) => std::cmp::Ordering::Greater,
-            _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
-        }
+    entries.sort_by(|a, b| match (a.is_dir, b.is_dir) {
+        (true, false) => std::cmp::Ordering::Less,
+        (false, true) => std::cmp::Ordering::Greater,
+        _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
     });
 
     Ok(entries)

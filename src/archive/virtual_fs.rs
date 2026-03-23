@@ -2,14 +2,16 @@
 
 use std::path::Path;
 
+#[allow(dead_code)]
 pub fn is_archive(path: &Path) -> bool {
-    match path.extension().and_then(|e| e.to_str()) {
-        Some("zip") | Some("tar") | Some("gz") | Some("7z") => true,
-        _ => false,
-    }
+    matches!(
+        path.extension().and_then(|e| e.to_str()),
+        Some("zip") | Some("tar") | Some("gz") | Some("7z")
+    )
 }
 
-pub fn list_archive(path: &Path) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+#[allow(dead_code)]
+pub fn list_archive(_path: &Path) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     // TODO: Detect format and list contents
     todo!()
 }
