@@ -239,7 +239,7 @@ component FileList {
         padding: 0;
         spacing: 0;
 
-        // Column headers
+        // Column headers (fixed height)
         Rectangle {
             height: 30px;
             background: Tokens.bg-header;
@@ -309,63 +309,79 @@ component FileList {
             }
         }
 
-        // File entries
-        for entry[index] in root.files : Rectangle {
-            height: 28px;
-            background: index == root.selected-index
-                ? Tokens.accent
-                : (mod(index, 2) == 0 ? transparent : Tokens.bg-row-alt);
+        // File entries (fill remaining space)
+        VerticalBox {
+            padding: 0;
+            spacing: 0;
+            vertical-stretch: 1;
 
-            HorizontalBox {
-                padding-left: 14px;
-                spacing: 8px;
+            for entry[index] in root.files : Rectangle {
+                min-height: 28px;
+                vertical-stretch: 0;
 
-                // Icon + Name
-                HorizontalBox {
-                    spacing: 8px;
-                    horizontal-stretch: 3;
+                // Background
+                Rectangle {
+                    background: index == root.selected-index
+                        ? Tokens.accent
+                        : (mod(index, 2) == 0 ? Tokens.bg-window : Tokens.bg-row-alt);
+                }
 
-                    Text {
-                        text: entry.icon;
-                        font-size: Tokens.font-lg;
-                        vertical-alignment: center;
+                // Content overlay (same size as background)
+                Rectangle {
+                    HorizontalBox {
+                        padding-left: 14px;
+                        spacing: 8px;
+
+                        // Icon + Name
+                        HorizontalBox {
+                            spacing: 8px;
+                            horizontal-stretch: 3;
+
+                            Text {
+                                text: entry.icon;
+                                font-size: Tokens.font-lg;
+                                vertical-alignment: center;
+                            }
+                            Text {
+                                text: entry.name;
+                                font-size: Tokens.font-md;
+                                font-weight: 500;
+                                color: index == root.selected-index ? Tokens.text-on-accent : Tokens.text-primary;
+                                overflow: elide;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        // Size
+                        Text {
+                            text: entry.size;
+                            font-size: Tokens.font-sm;
+                            color: index == root.selected-index ? #ccddff : Tokens.text-secondary;
+                            horizontal-alignment: right;
+                            min-width: 70px;
+                            preferred-width: 90px;
+                            vertical-alignment: center;
+                        }
+
+                        // Modified
+                        Text {
+                            text: entry.modified;
+                            font-size: Tokens.font-sm;
+                            color: index == root.selected-index ? #ccddff : Tokens.text-secondary;
+                            horizontal-alignment: right;
+                            min-width: 100px;
+                            preferred-width: 150px;
+                            vertical-alignment: center;
+                        }
                     }
-                    Text {
-                        text: entry.name;
-                        font-size: Tokens.font-md;
-                        font-weight: 500;
-                        color: index == root.selected-index ? Tokens.text-on-accent : Tokens.text-primary;
-                        overflow: elide;
-                        vertical-alignment: center;
+
+                    // Touch overlay (covers entire row)
+                    TouchArea {
+                        clicked => { root.file-selected(index) }
+                        double-clicked => { root.file-activated(index) }
+                        mouse-cursor: pointer;
                     }
                 }
-
-                // Size
-                Text {
-                    text: entry.size;
-                    font-size: Tokens.font-sm;
-                    color: index == root.selected-index ? #ccddff : Tokens.text-secondary;
-                    horizontal-alignment: right;
-                    min-width: 70px;
-                    preferred-width: 90px;
-                    vertical-alignment: center;
-                }
-
-                // Modified
-                Text {
-                    text: entry.modified;
-                    font-size: Tokens.font-sm;
-                    color: index == root.selected-index ? #ccddff : Tokens.text-secondary;
-                    horizontal-alignment: right;
-                    min-width: 100px;
-                    preferred-width: 150px;
-                    vertical-alignment: center;
-                }
-            }
-
-            TouchArea {
-                clicked => { root.file-selected(index) }
-                double-clicked => { root.file-activated(index) }
             }
         }
     }
