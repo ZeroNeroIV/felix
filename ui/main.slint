@@ -1,19 +1,523 @@
-import { Button, VerticalBox } from "std-widgets.slint";
+import { Button, LineEdit, ListView, HorizontalBox, VerticalBox, CheckBox } from "std-widgets.slint";
+
+// ─── Data Models ───────────────────────────────────────────────────────────
+
+export struct FileEntry {
+    name: string,
+    path: string,
+    is-dir: bool,
+    size: string,
+    modified: string,
+    icon: string,
+}
+
+export struct SidebarItem {
+    name: string,
+    icon: string,
+    path: string,
+    section: string,
+}
+
+// ─── Sidebar Component ─────────────────────────────────────────────────────
+
+component Sidebar {
+    in property <[SidebarItem]> items;
+    in property <string> active-path;
+    callback item-clicked(string);
+
+    width: 200px;
+
+    Rectangle {
+        background: #f5f5f7;
+
+        VerticalBox {
+            padding: 8px;
+            spacing: 2px;
+
+            // Favorites section header
+            Text {
+                text: "Favorites";
+                font-size: 11px;
+                font-weight: 700;
+                color: #888;
+                x: 8px;
+            }
+
+            // Favorites items
+            for item in root.items : Rectangle {
+                height: 28px;
+                background: item.path == root.active-path ? #0066ff20 : transparent;
+                border-radius: 6px;
+
+                HorizontalBox {
+                    padding-left: 8px;
+                    spacing: 6px;
+
+                    Text {
+                        text: item.icon;
+                        font-size: 14px;
+                        vertical-alignment: center;
+                    }
+                    Text {
+                        text: item.name;
+                        font-size: 13px;
+                        color: item.path == root.active-path ? #0066ff : #333;
+                        vertical-alignment: center;
+                    }
+                }
+
+                TouchArea {
+                    clicked => { root.item-clicked(item.path) }
+                }
+            }
+
+            // Devices section header
+            Text {
+                text: "Devices";
+                font-size: 11px;
+                font-weight: 700;
+                color: #888;
+                x: 8px;
+            }
+
+            // Devices items (filtered by section)
+            for item in root.items : Rectangle {
+                visible: item.section == "devices";
+                height: 28px;
+                background: item.path == root.active-path ? #0066ff20 : transparent;
+                border-radius: 6px;
+
+                HorizontalBox {
+                    padding-left: 8px;
+                    spacing: 6px;
+
+                    Text {
+                        text: item.icon;
+                        font-size: 14px;
+                        vertical-alignment: center;
+                    }
+                    Text {
+                        text: item.name;
+                        font-size: 13px;
+                        color: item.path == root.active-path ? #0066ff : #333;
+                        vertical-alignment: center;
+                    }
+                }
+
+                TouchArea {
+                    clicked => { root.item-clicked(item.path) }
+                }
+            }
+        }
+    }
+}
+
+// ─── Toolbar Component ─────────────────────────────────────────────────────
+
+component Toolbar {
+    in property <string> current-path;
+    in property <bool> can-go-back;
+    in property <bool> can-go-forward;
+    in property <string> search-text;
+
+    callback go-back();
+    callback go-forward();
+    callback go-up();
+    callback path-entered(string);
+    callback search-changed(string);
+
+    height: 44px;
+
+    Rectangle {
+        background: #fafafa;
+
+        HorizontalBox {
+            padding: 6px;
+            spacing: 8px;
+
+            // Navigation buttons
+            Button {
+                text: "◀";
+                enabled: root.can-go-back;
+                clicked => { root.go-back() }
+            }
+            Button {
+                text: "▶";
+                enabled: root.can-go-forward;
+                clicked => { root.go-forward() }
+            }
+            Button {
+                text: "▲";
+                clicked => { root.go-up() }
+            }
+
+            // Path bar
+            LineEdit {
+                text: root.current-path;
+                placeholder-text: "Path...";
+                accepted(text) => { root.path-entered(text) }
+                horizontal-stretch: 1;
+            }
+
+            // Search bar
+            LineEdit {
+                text: root.search-text;
+                placeholder-text: "Search...";
+                width: 200px;
+                edited(text) => { root.search-changed(text) }
+            }
+        }
+    }
+}
+
+// ─── File List Component ───────────────────────────────────────────────────
+
+component FileList {
+    in property <[FileEntry]> files;
+    in property <int> selected-index: -1;
+    in property <string> sort-column: "name";
+    in property <bool> sort-ascending: true;
+
+    callback file-selected(int);
+    callback file-activated(int);
+    callback sort-requested(string);
+
+    VerticalBox {
+        padding: 0;
+        spacing: 0;
+
+        // Column headers
+        Rectangle {
+            height: 28px;
+            background: #e8e8ed;
+
+            HorizontalBox {
+                padding-left: 12px;
+                spacing: 0;
+
+                // Name column
+                Rectangle {
+                    horizontal-stretch: 3;
+                    Text {
+                        text: "Name";
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: #555;
+                        x: 0;
+                        vertical-alignment: center;
+                    }
+                    TouchArea {
+                        clicked => { root.sort-requested("name") }
+                    }
+                }
+
+                // Size column
+                Rectangle {
+                    width: 80px;
+                    Text {
+                        text: "Size";
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: #555;
+                        horizontal-alignment: right;
+                        vertical-alignment: center;
+                    }
+                    TouchArea {
+                        clicked => { root.sort-requested("size") }
+                    }
+                }
+
+                // Modified column
+                Rectangle {
+                    width: 140px;
+                    Text {
+                        text: "Modified";
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: #555;
+                        horizontal-alignment: right;
+                        vertical-alignment: center;
+                    }
+                    TouchArea {
+                        clicked => { root.sort-requested("modified") }
+                    }
+                }
+            }
+        }
+
+        // File entries
+        for entry[index] in root.files : Rectangle {
+            height: 26px;
+            background: index == root.selected-index
+                ? #0066ff
+                : (mod(index, 2) == 0 ? transparent : #f0f0f2);
+
+            HorizontalBox {
+                padding-left: 12px;
+                spacing: 8px;
+
+                // Icon + Name
+                HorizontalBox {
+                    spacing: 6px;
+                    horizontal-stretch: 3;
+
+                    Text {
+                        text: entry.icon;
+                        font-size: 14px;
+                        vertical-alignment: center;
+                    }
+                    Text {
+                        text: entry.name;
+                        font-size: 13px;
+                        color: index == root.selected-index ? white : #222;
+                        overflow: elide;
+                        vertical-alignment: center;
+                    }
+                }
+
+                // Size
+                Text {
+                    text: entry.size;
+                    font-size: 12px;
+                    color: index == root.selected-index ? #ffffffcc : #888;
+                    horizontal-alignment: right;
+                    width: 80px;
+                    vertical-alignment: center;
+                }
+
+                // Modified
+                Text {
+                    text: entry.modified;
+                    font-size: 12px;
+                    color: index == root.selected-index ? #ffffffcc : #888;
+                    horizontal-alignment: right;
+                    width: 140px;
+                    vertical-alignment: center;
+                }
+            }
+
+            TouchArea {
+                clicked => { root.file-selected(index) }
+                double-clicked => { root.file-activated(index) }
+            }
+        }
+    }
+}
+
+// ─── Status Bar ────────────────────────────────────────────────────────────
+
+component StatusBar {
+    in property <int> item-count;
+    in property <string> status-message;
+
+    height: 24px;
+
+    Rectangle {
+        background: #e8e8ed;
+
+        HorizontalBox {
+            padding-left: 12px;
+            padding-right: 12px;
+
+            Text {
+                text: "\{root.item-count} items";
+                font-size: 11px;
+                color: #666;
+                vertical-alignment: center;
+            }
+
+            Text {
+                text: root.status-message;
+                font-size: 11px;
+                color: #666;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+            }
+        }
+    }
+}
+
+// ─── Main Window ───────────────────────────────────────────────────────────
 
 export component MainWindow inherits Window {
     title: "felix";
-    width: 1024px;
-    height: 768px;
+    width: 1100px;
+    height: 720px;
+    background: white;
+
+    // Properties
+    in property <string> current-path: "/home";
+    in property <[FileEntry]> files: [];
+    in property <[SidebarItem]> sidebar-items: [];
+    in property <string> sidebar-active-path: "";
+    in property <int> selected-index: -1;
+    in property <bool> can-go-back: false;
+    in property <bool> can-go-forward: false;
+    in property <string> search-text: "";
+    in property <string> status-message: "";
+
+    // Callbacks
+    callback go-back();
+    callback go-forward();
+    callback go-up();
+    callback path-entered(string);
+    callback search-changed(string);
+    callback sidebar-item-clicked(string);
+    callback file-selected(int);
+    callback file-activated(int);
+    callback sort-requested(string);
 
     VerticalBox {
+        padding: 0;
+        spacing: 0;
+
+        // Toolbar at top
+        Toolbar {
+            current-path: root.current-path;
+            can-go-back: root.can-go-back;
+            can-go-forward: root.can-go-forward;
+            search-text: root.search-text;
+            go-back => { root.go-back() }
+            go-forward => { root.go-forward() }
+            go-up => { root.go-up() }
+            path-entered(p) => { root.path-entered(p) }
+            search-changed(s) => { root.search-changed(s) }
+        }
+
+        // Main content area: sidebar + file list
+        HorizontalBox {
+            padding: 0;
+            spacing: 0;
+            vertical-stretch: 1;
+
+            // Sidebar
+            Sidebar {
+                items: root.sidebar-items;
+                active-path: root.sidebar-active-path;
+                item-clicked(p) => { root.sidebar-item-clicked(p) }
+            }
+
+            // Divider
+            Rectangle {
+                width: 1px;
+                background: #d1d1d6;
+            }
+
+            // File list
+            FileList {
+                files: root.files;
+                selected-index: root.selected-index;
+                horizontal-stretch: 1;
+                file-selected(i) => { root.file-selected(i) }
+                file-activated(i) => { root.file-activated(i) }
+                sort-requested(col) => { root.sort-requested(col) }
+            }
+        }
+
+        // Status bar at bottom
+        StatusBar {
+            item-count: root.files.length;
+            status-message: root.status-message;
+        }
+    }
+}
+
+// ─── First Launch Setup Dialog ─────────────────────────────────────────────
+
+export component SetupDialog inherits Dialog {
+    title: "felix — First Launch Setup";
+    width: 500px;
+    height: 400px;
+
+    in-out property <bool> enable-markdown: true;
+    in-out property <bool> enable-pdf: true;
+    in-out property <bool> enable-docx: false;
+    in-out property <bool> enable-pptx: false;
+
+    callback setup-complete();
+
+    VerticalBox {
+        padding: 24px;
+        spacing: 16px;
+
         Text {
-            text: "felix";
-            font-size: 24px;
+            text: "Welcome to felix!";
+            font-size: 22px;
+            font-weight: 700;
             horizontal-alignment: center;
         }
+
         Text {
-            text: "File manager coming soon...";
+            text: "Choose which built-in tools to enable.\nYou can change these later in settings.";
+            font-size: 13px;
+            color: #666;
             horizontal-alignment: center;
+        }
+
+        // Tool toggles
+        VerticalBox {
+            spacing: 8px;
+
+            HorizontalBox {
+                spacing: 12px;
+                CheckBox {
+                    checked: root.enable-markdown;
+                    toggled => { root.enable-markdown = self.checked }
+                }
+                Text {
+                    text: "Markdown viewer/editor";
+                    vertical-alignment: center;
+                    font-size: 14px;
+                }
+            }
+
+            HorizontalBox {
+                spacing: 12px;
+                CheckBox {
+                    checked: root.enable-pdf;
+                    toggled => { root.enable-pdf = self.checked }
+                }
+                Text {
+                    text: "PDF viewer";
+                    vertical-alignment: center;
+                    font-size: 14px;
+                }
+            }
+
+            HorizontalBox {
+                spacing: 12px;
+                CheckBox {
+                    checked: root.enable-docx;
+                    toggled => { root.enable-docx = self.checked }
+                }
+                Text {
+                    text: "DOCX viewer/editor";
+                    vertical-alignment: center;
+                    font-size: 14px;
+                }
+            }
+
+            HorizontalBox {
+                spacing: 12px;
+                CheckBox {
+                    checked: root.enable-pptx;
+                    toggled => { root.enable-pptx = self.checked }
+                }
+                Text {
+                    text: "PPTX viewer/editor";
+                    vertical-alignment: center;
+                    font-size: 14px;
+                }
+            }
+        }
+
+        // Spacer
+        Rectangle { vertical-stretch: 1; }
+
+        Button {
+            text: "Get Started";
+            primary: true;
+            clicked => { root.setup-complete() }
         }
     }
 }
