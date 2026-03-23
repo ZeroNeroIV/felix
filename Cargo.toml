@@ -1,0 +1,32 @@
+[package]
+name = "felix"
+version = "0.1.0"
+edition = "2021"
+description = "A lightweight, fast file manager with built-in document tools"
+license = "MIT"
+repository = "https://github.com/ZeroNeroIV/felix"
+readme = "README.md"
+
+[features]
+default = ["markdown", "pdf"]
+markdown = []
+pdf = []
+docx = []
+pptx = []
+all-tools = ["markdown", "pdf", "docx", "pptx"]
+
+[dependencies]
+slint = "1"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+dirs = "5"
+log = "0.4"
+env_logger = "0.11"
+ignore = "0.4"       # fast file walking (ripgrep's engine)
+zip = "0.6"
+tar = "0.4"
+flate2 = "1"
+sevenz-rust = "0.6"
+
+[build-dependencies]
+slint-build = "1"
