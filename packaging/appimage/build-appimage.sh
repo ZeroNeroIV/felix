@@ -58,8 +58,10 @@ if [ ! -f "appimagetool" ]; then
 fi
 
 # Build AppImage
+# APPIMAGE_EXTRACT_AND_RUN=1 allows running without FUSE (needed in CI)
 echo "Building AppImage..."
 OUTPUT="felix-${VERSION}-${ARCH}.AppImage"
+export APPIMAGE_EXTRACT_AND_RUN=1
 ./appimagetool "${APPDIR}" "${OUTPUT}"
 
 echo "✅ AppImage created: ${OUTPUT}"
