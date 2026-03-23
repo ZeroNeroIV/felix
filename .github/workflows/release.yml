@@ -2,6 +2,8 @@ name: Build & Release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
   workflow_dispatch:
@@ -98,8 +100,16 @@ jobs:
         run: |
           if [ -n "${{ github.event.inputs.version }}" ]; then
             echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
+            echo "is_release=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+            echo "is_release=true" >> $GITHUB_OUTPUT
+          else
+            # Extract version from Cargo.toml for main branch builds
+            VERSION=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            echo "sha_short=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
           fi
 
       # ─── Build .deb ──────────────────────────────────────────────────
@@ -202,5 +212,53 @@ jobs:
           files: artifacts/**/*
           draft: false
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─── Main branch auto-release ─────────────────────────────────────────
+  main-release:
+    name: Main Branch Release
+    needs: build
+    runs-on: ubuntu-24.04
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "sha_short=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: List artifacts
+        run: find artifacts/ -type f -ls
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "main-${{ steps.version.outputs.sha_short }}"
+          name: "felix main branch build"
+          body: |
+            ## felix main branch build
+
+            Latest development build from main branch.
+            Commit: `${{ github.sha }}`
+
+            ### Artifacts
+
+            Built from commit `${{ steps.version.outputs.sha_short }}`
+          files: artifacts/**/*
+          draft: false
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
