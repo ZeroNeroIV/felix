@@ -13,6 +13,19 @@ pub struct FileEntry {
 }
 
 impl FileEntry {
+    /// Create a FileEntry from a path, reading metadata.
+    pub fn from_path(path: &Path) -> Option<Self> {
+        let metadata = path.metadata().ok()?;
+        let name = path.file_name()?.to_string_lossy().to_string();
+        Some(FileEntry {
+            name,
+            path: path.to_path_buf(),
+            is_dir: metadata.is_dir(),
+            size: metadata.len(),
+            modified: metadata.modified().ok(),
+        })
+    }
+
     pub fn icon(&self) -> &str {
         if self.is_dir {
             return "📁";

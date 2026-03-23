@@ -3,6 +3,7 @@
 slint::include_modules!();
 
 use crate::fs::browser;
+use crate::search;
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
@@ -203,6 +204,7 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     });
 
     let w = window.as_weak();
+    let nav_for_activated = nav.clone();
     let files_ref = files_cache.clone();
     window.on_file_activated(move |index| {
         let window = w.unwrap();
@@ -211,7 +213,7 @@ pub fn launch() -> Result<(), slint::PlatformError> {
             if entry.is_dir {
                 let path = entry.path.clone();
                 drop(files);
-                let nav_ref2 = nav.clone();
+                let nav_ref2 = nav_for_activated.clone();
                 let files_ref2 = files_ref.clone();
                 load_directory(&window, &nav_ref2, &files_ref2, &path);
             }
@@ -224,25 +226,48 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     });
 
     let w = window.as_weak();
-    let files_ref = files_cache.clone();
+    let nav_ref = nav.clone();
     window.on_search_changed(move |query| {
         let window = w.unwrap();
         let query = query.to_string();
-        let files = files_ref.borrow();
 
         if query.is_empty() {
-            let slint_files: Vec<FileEntry> = files.iter().map(to_slint_entry).collect();
+            // Restore cached directory listing
+            let slint_files: Vec<FileEntry> =
+                files_cache.borrow().iter().map(to_slint_entry).collect();
             let model: slint::ModelRc<FileEntry> =
                 Rc::new(slint::VecModel::from(slint_files)).into();
             window.set_files(model);
+            window.set_status_message("".into());
         } else {
-            let filtered: Vec<FileEntry> = files
-                .iter()
-                .filter(|e| e.name.to_lowercase().contains(&query.to_lowercase()))
-                .map(to_slint_entry)
-                .collect();
-            let model: slint::ModelRc<FileEntry> = Rc::new(slint::VecModel::from(filtered)).into();
-            window.set_files(model);
+            // Recursive filename search from current directory
+            let current = nav_ref.borrow().current().clone();
+            match search::filename::search_filenames(&current, &query, 200) {
+                Ok(paths) => {
+                    let slint_files: Vec<FileEntry> = paths
+                        .iter()
+                        .filter_map(|p| browser::FileEntry::from_path(p))
+                        .map(|e| to_slint_entry(&e))
+                        .collect();
+                    let count = slint_files.len();
+                    let model: slint::ModelRc<FileEntry> =
+                        Rc::new(slint::VecModel::from(slint_files)).into();
+                    window.set_files(model);
+                    window.set_status_message(
+                        format!(
+                            "{} result{} for \"{}\"",
+                            count,
+                            if count == 1 { "" } else { "s" },
+                            query
+                        )
+                        .into(),
+                    );
+                }
+                Err(e) => {
+                    log::error!("Search error: {}", e);
+                    window.set_status_message(format!("Search error: {}", e).into());
+                }
+            }
         }
     });
 
