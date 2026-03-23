@@ -1,6 +1,39 @@
-import { Button, LineEdit, ListView, HorizontalBox, VerticalBox, CheckBox } from "std-widgets.slint";
+import { Button, LineEdit, HorizontalBox, VerticalBox, CheckBox } from "std-widgets.slint";
 
-// ─── Data Models ───────────────────────────────────────────────────────────
+// ─── Design Tokens ──────────────────────────────────────────────────────────
+
+global Tokens {
+    // Surfaces
+    out property <color> bg-window: #ffffff;
+    out property <color> bg-sidebar: #f6f6f8;
+    out property <color> bg-toolbar: #f9f9fb;
+    out property <color> bg-header: #efeff3;
+    out property <color> bg-status: #efeff3;
+    out property <color> bg-row-alt: #f7f7f9;
+
+    // Accent
+    out property <color> accent: #007aff;
+    out property <color> accent-soft: #007aff14;
+    out property <color> accent-text: #ffffff;
+
+    // Text
+    out property <color> text-primary: #1d1d1f;
+    out property <color> text-secondary: #6e6e73;
+    out property <color> text-tertiary: #aeaeb2;
+    out property <color> text-on-accent: #ffffff;
+
+    // Borders
+    out property <color> border: #d2d2d7;
+    out property <color> border-subtle: #e5e5ea;
+
+    // Fonts
+    out property <length> font-xs: 11px;
+    out property <length> font-sm: 12px;
+    out property <length> font-md: 13px;
+    out property <length> font-lg: 14px;
+}
+
+// ─── Data Models ────────────────────────────────────────────────────────────
 
 export struct FileEntry {
     name: string,
@@ -18,101 +51,111 @@ export struct SidebarItem {
     section: string,
 }
 
-// ─── Sidebar Component ─────────────────────────────────────────────────────
+// ─── Sidebar ────────────────────────────────────────────────────────────────
 
 component Sidebar {
     in property <[SidebarItem]> items;
     in property <string> active-path;
     callback item-clicked(string);
 
-    width: 200px;
+    min-width: 180px;
+    preferred-width: 200px;
 
     Rectangle {
-        background: #f5f5f7;
+        background: Tokens.bg-sidebar;
 
         VerticalBox {
-            padding: 8px;
+            padding: 10px;
             spacing: 2px;
 
-            // Favorites section header
+            // Favorites header
             Text {
                 text: "Favorites";
-                font-size: 11px;
+                font-size: Tokens.font-xs;
                 font-weight: 700;
-                color: #888;
-                x: 8px;
+                color: Tokens.text-secondary;
+                letter-spacing: 0.5px;
+                x: 10px;
             }
 
             // Favorites items
             for item in root.items : Rectangle {
-                height: 28px;
-                background: item.path == root.active-path ? #0066ff20 : transparent;
+                height: 30px;
                 border-radius: 6px;
+                background: item.path == root.active-path ? Tokens.accent-soft : transparent;
 
                 HorizontalBox {
-                    padding-left: 8px;
-                    spacing: 6px;
+                    padding-left: 10px;
+                    spacing: 8px;
 
                     Text {
                         text: item.icon;
-                        font-size: 14px;
+                        font-size: Tokens.font-lg;
                         vertical-alignment: center;
                     }
                     Text {
                         text: item.name;
-                        font-size: 13px;
-                        color: item.path == root.active-path ? #0066ff : #333;
+                        font-size: Tokens.font-md;
+                        font-weight: item.path == root.active-path ? 600 : 400;
+                        color: item.path == root.active-path ? Tokens.accent : Tokens.text-primary;
                         vertical-alignment: center;
                     }
                 }
 
                 TouchArea {
                     clicked => { root.item-clicked(item.path) }
+                    mouse-cursor: pointer;
                 }
             }
 
-            // Devices section header
+            // Spacer between sections
+            Rectangle { height: 8px; }
+
+            // Devices header
             Text {
                 text: "Devices";
-                font-size: 11px;
+                font-size: Tokens.font-xs;
                 font-weight: 700;
-                color: #888;
-                x: 8px;
+                color: Tokens.text-secondary;
+                letter-spacing: 0.5px;
+                x: 10px;
             }
 
-            // Devices items (filtered by section)
+            // Devices items
             for item in root.items : Rectangle {
                 visible: item.section == "devices";
-                height: 28px;
-                background: item.path == root.active-path ? #0066ff20 : transparent;
+                height: 30px;
                 border-radius: 6px;
+                background: item.path == root.active-path ? Tokens.accent-soft : transparent;
 
                 HorizontalBox {
-                    padding-left: 8px;
-                    spacing: 6px;
+                    padding-left: 10px;
+                    spacing: 8px;
 
                     Text {
                         text: item.icon;
-                        font-size: 14px;
+                        font-size: Tokens.font-lg;
                         vertical-alignment: center;
                     }
                     Text {
                         text: item.name;
-                        font-size: 13px;
-                        color: item.path == root.active-path ? #0066ff : #333;
+                        font-size: Tokens.font-md;
+                        font-weight: item.path == root.active-path ? 600 : 400;
+                        color: item.path == root.active-path ? Tokens.accent : Tokens.text-primary;
                         vertical-alignment: center;
                     }
                 }
 
                 TouchArea {
                     clicked => { root.item-clicked(item.path) }
+                    mouse-cursor: pointer;
                 }
             }
         }
     }
 }
 
-// ─── Toolbar Component ─────────────────────────────────────────────────────
+// ─── Toolbar ────────────────────────────────────────────────────────────────
 
 component Toolbar {
     in property <string> current-path;
@@ -126,51 +169,61 @@ component Toolbar {
     callback path-entered(string);
     callback search-changed(string);
 
-    height: 44px;
+    height: 48px;
 
     Rectangle {
-        background: #fafafa;
+        background: Tokens.bg-toolbar;
+
+        // Bottom border
+        Rectangle {
+            y: parent.height - 1px;
+            height: 1px;
+            background: Tokens.border-subtle;
+        }
 
         HorizontalBox {
-            padding: 6px;
-            spacing: 8px;
+            padding: 8px;
+            spacing: 6px;
 
-            // Navigation buttons
+            // Back
             Button {
-                text: "◀";
+                text: "‹";
                 enabled: root.can-go-back;
                 clicked => { root.go-back() }
             }
+            // Forward
             Button {
-                text: "▶";
+                text: "›";
                 enabled: root.can-go-forward;
                 clicked => { root.go-forward() }
             }
+            // Up
             Button {
-                text: "▲";
+                text: "⌃";
                 clicked => { root.go-up() }
             }
 
             // Path bar
             LineEdit {
                 text: root.current-path;
-                placeholder-text: "Path...";
+                placeholder-text: "/path/to/directory";
                 accepted(text) => { root.path-entered(text) }
                 horizontal-stretch: 1;
             }
 
-            // Search bar
+            // Search
             LineEdit {
                 text: root.search-text;
-                placeholder-text: "Search...";
-                width: 200px;
+                placeholder-text: "Search files…";
+                min-width: 140px;
+                preferred-width: 220px;
                 edited(text) => { root.search-changed(text) }
             }
         }
     }
 }
 
-// ─── File List Component ───────────────────────────────────────────────────
+// ─── File List ──────────────────────────────────────────────────────────────
 
 component FileList {
     in property <[FileEntry]> files;
@@ -188,58 +241,69 @@ component FileList {
 
         // Column headers
         Rectangle {
-            height: 28px;
-            background: #e8e8ed;
+            height: 30px;
+            background: Tokens.bg-header;
+
+            // Bottom border
+            Rectangle {
+                y: parent.height - 1px;
+                height: 1px;
+                background: Tokens.border-subtle;
+            }
 
             HorizontalBox {
-                padding-left: 12px;
+                padding-left: 14px;
                 spacing: 0;
 
-                // Name column
+                // Name
                 Rectangle {
                     horizontal-stretch: 3;
                     Text {
                         text: "Name";
-                        font-size: 12px;
+                        font-size: Tokens.font-sm;
                         font-weight: 600;
-                        color: #555;
-                        x: 0;
+                        color: Tokens.text-secondary;
                         vertical-alignment: center;
                     }
                     TouchArea {
                         clicked => { root.sort-requested("name") }
+                        mouse-cursor: pointer;
                     }
                 }
 
-                // Size column
+                // Size
                 Rectangle {
-                    width: 80px;
+                    min-width: 70px;
+                    preferred-width: 90px;
                     Text {
                         text: "Size";
-                        font-size: 12px;
+                        font-size: Tokens.font-sm;
                         font-weight: 600;
-                        color: #555;
+                        color: Tokens.text-secondary;
                         horizontal-alignment: right;
                         vertical-alignment: center;
                     }
                     TouchArea {
                         clicked => { root.sort-requested("size") }
+                        mouse-cursor: pointer;
                     }
                 }
 
-                // Modified column
+                // Modified
                 Rectangle {
-                    width: 140px;
+                    min-width: 100px;
+                    preferred-width: 150px;
                     Text {
-                        text: "Modified";
-                        font-size: 12px;
+                        text: "Date Modified";
+                        font-size: Tokens.font-sm;
                         font-weight: 600;
-                        color: #555;
+                        color: Tokens.text-secondary;
                         horizontal-alignment: right;
                         vertical-alignment: center;
                     }
                     TouchArea {
                         clicked => { root.sort-requested("modified") }
+                        mouse-cursor: pointer;
                     }
                 }
             }
@@ -247,29 +311,30 @@ component FileList {
 
         // File entries
         for entry[index] in root.files : Rectangle {
-            height: 26px;
+            height: 28px;
             background: index == root.selected-index
-                ? #0066ff
-                : (mod(index, 2) == 0 ? transparent : #f0f0f2);
+                ? Tokens.accent
+                : (mod(index, 2) == 0 ? transparent : Tokens.bg-row-alt);
 
             HorizontalBox {
-                padding-left: 12px;
+                padding-left: 14px;
                 spacing: 8px;
 
                 // Icon + Name
                 HorizontalBox {
-                    spacing: 6px;
+                    spacing: 8px;
                     horizontal-stretch: 3;
 
                     Text {
                         text: entry.icon;
-                        font-size: 14px;
+                        font-size: Tokens.font-lg;
                         vertical-alignment: center;
                     }
                     Text {
                         text: entry.name;
-                        font-size: 13px;
-                        color: index == root.selected-index ? white : #222;
+                        font-size: Tokens.font-md;
+                        font-weight: 500;
+                        color: index == root.selected-index ? Tokens.text-on-accent : Tokens.text-primary;
                         overflow: elide;
                         vertical-alignment: center;
                     }
@@ -278,20 +343,22 @@ component FileList {
                 // Size
                 Text {
                     text: entry.size;
-                    font-size: 12px;
-                    color: index == root.selected-index ? #ffffffcc : #888;
+                    font-size: Tokens.font-sm;
+                    color: index == root.selected-index ? #ccddff : Tokens.text-secondary;
                     horizontal-alignment: right;
-                    width: 80px;
+                    min-width: 70px;
+                    preferred-width: 90px;
                     vertical-alignment: center;
                 }
 
                 // Modified
                 Text {
                     text: entry.modified;
-                    font-size: 12px;
-                    color: index == root.selected-index ? #ffffffcc : #888;
+                    font-size: Tokens.font-sm;
+                    color: index == root.selected-index ? #ccddff : Tokens.text-secondary;
                     horizontal-alignment: right;
-                    width: 140px;
+                    min-width: 100px;
+                    preferred-width: 150px;
                     vertical-alignment: center;
                 }
             }
@@ -304,32 +371,38 @@ component FileList {
     }
 }
 
-// ─── Status Bar ────────────────────────────────────────────────────────────
+// ─── Status Bar ─────────────────────────────────────────────────────────────
 
 component StatusBar {
     in property <int> item-count;
     in property <string> status-message;
 
-    height: 24px;
+    height: 26px;
 
     Rectangle {
-        background: #e8e8ed;
+        background: Tokens.bg-status;
+
+        // Top border
+        Rectangle {
+            height: 1px;
+            background: Tokens.border-subtle;
+        }
 
         HorizontalBox {
-            padding-left: 12px;
-            padding-right: 12px;
+            padding-left: 14px;
+            padding-right: 14px;
 
             Text {
                 text: "\{root.item-count} items";
-                font-size: 11px;
-                color: #666;
+                font-size: Tokens.font-xs;
+                color: Tokens.text-secondary;
                 vertical-alignment: center;
             }
 
             Text {
                 text: root.status-message;
-                font-size: 11px;
-                color: #666;
+                font-size: Tokens.font-xs;
+                color: Tokens.text-secondary;
                 horizontal-alignment: right;
                 vertical-alignment: center;
             }
@@ -337,13 +410,15 @@ component StatusBar {
     }
 }
 
-// ─── Main Window ───────────────────────────────────────────────────────────
+// ─── Main Window ────────────────────────────────────────────────────────────
 
 export component MainWindow inherits Window {
     title: "felix";
-    width: 1100px;
-    height: 720px;
-    background: white;
+    min-width: 700px;
+    min-height: 450px;
+    preferred-width: 1100px;
+    preferred-height: 720px;
+    background: Tokens.bg-window;
 
     // Properties
     in property <string> current-path: "/home";
@@ -371,7 +446,6 @@ export component MainWindow inherits Window {
         padding: 0;
         spacing: 0;
 
-        // Toolbar at top
         Toolbar {
             current-path: root.current-path;
             can-go-back: root.can-go-back;
@@ -384,13 +458,11 @@ export component MainWindow inherits Window {
             search-changed(s) => { root.search-changed(s) }
         }
 
-        // Main content area: sidebar + file list
         HorizontalBox {
             padding: 0;
             spacing: 0;
             vertical-stretch: 1;
 
-            // Sidebar
             Sidebar {
                 items: root.sidebar-items;
                 active-path: root.sidebar-active-path;
@@ -400,10 +472,9 @@ export component MainWindow inherits Window {
             // Divider
             Rectangle {
                 width: 1px;
-                background: #d1d1d6;
+                background: Tokens.border;
             }
 
-            // File list
             FileList {
                 files: root.files;
                 selected-index: root.selected-index;
@@ -414,7 +485,6 @@ export component MainWindow inherits Window {
             }
         }
 
-        // Status bar at bottom
         StatusBar {
             item-count: root.files.length;
             status-message: root.status-message;
@@ -422,12 +492,15 @@ export component MainWindow inherits Window {
     }
 }
 
-// ─── First Launch Setup Dialog ─────────────────────────────────────────────
+// ─── First Launch Setup Dialog ──────────────────────────────────────────────
 
 export component SetupDialog inherits Dialog {
     title: "felix — First Launch Setup";
-    width: 500px;
-    height: 400px;
+    min-width: 400px;
+    min-height: 350px;
+    preferred-width: 500px;
+    preferred-height: 400px;
+    background: Tokens.bg-window;
 
     in-out property <bool> enable-markdown: true;
     in-out property <bool> enable-pdf: true;
@@ -437,26 +510,30 @@ export component SetupDialog inherits Dialog {
     callback setup-complete();
 
     VerticalBox {
-        padding: 24px;
-        spacing: 16px;
+        padding: 32px;
+        spacing: 20px;
 
         Text {
-            text: "Welcome to felix!";
-            font-size: 22px;
+            text: "Welcome to felix";
+            font-size: 24px;
             font-weight: 700;
+            color: Tokens.text-primary;
             horizontal-alignment: center;
         }
 
         Text {
             text: "Choose which built-in tools to enable.\nYou can change these later in settings.";
-            font-size: 13px;
-            color: #666;
+            font-size: Tokens.font-md;
+            color: Tokens.text-secondary;
             horizontal-alignment: center;
         }
 
+        // Spacer
+        Rectangle { height: 8px; }
+
         // Tool toggles
         VerticalBox {
-            spacing: 8px;
+            spacing: 12px;
 
             HorizontalBox {
                 spacing: 12px;
@@ -467,7 +544,8 @@ export component SetupDialog inherits Dialog {
                 Text {
                     text: "Markdown viewer/editor";
                     vertical-alignment: center;
-                    font-size: 14px;
+                    font-size: Tokens.font-lg;
+                    color: Tokens.text-primary;
                 }
             }
 
@@ -480,7 +558,8 @@ export component SetupDialog inherits Dialog {
                 Text {
                     text: "PDF viewer";
                     vertical-alignment: center;
-                    font-size: 14px;
+                    font-size: Tokens.font-lg;
+                    color: Tokens.text-primary;
                 }
             }
 
@@ -493,7 +572,8 @@ export component SetupDialog inherits Dialog {
                 Text {
                     text: "DOCX viewer/editor";
                     vertical-alignment: center;
-                    font-size: 14px;
+                    font-size: Tokens.font-lg;
+                    color: Tokens.text-primary;
                 }
             }
 
@@ -506,7 +586,8 @@ export component SetupDialog inherits Dialog {
                 Text {
                     text: "PPTX viewer/editor";
                     vertical-alignment: center;
-                    font-size: 14px;
+                    font-size: Tokens.font-lg;
+                    color: Tokens.text-primary;
                 }
             }
         }
