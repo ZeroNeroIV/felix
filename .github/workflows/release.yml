@@ -247,12 +247,12 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "main-${{ steps.version.outputs.sha_short }}"
-          name: "felix main branch build"
+          tag_name: "v${{ steps.version.outputs.version }}"
+          name: "felix v${{ steps.version.outputs.version }} (Latest)"
           body: |
-            ## felix main branch build
+            ## felix v${{ steps.version.outputs.version }} (Latest Release)
 
-            Latest development build from main branch.
+            Latest stable release built from main branch.
             Commit: `${{ github.sha }}`
 
             ### Artifacts
@@ -260,6 +260,7 @@ jobs:
             Built from commit `${{ steps.version.outputs.sha_short }}`
           files: artifacts/**/*
           draft: false
-          prerelease: true
+          prerelease: false
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
