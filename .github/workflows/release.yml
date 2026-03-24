@@ -106,7 +106,7 @@ jobs:
         run: |
           mkdir -p artifacts
           cp target/debian/*.deb artifacts/ 2>/dev/null || true
-          cp target/*.rpm artifacts/ 2>/dev/null || true
+          cp target/generate-rpm/*.rpm artifacts/ 2>/dev/null || true
           cp felix-*.AppImage artifacts/ 2>/dev/null || true
           cp target/release/${{ env.BINARY_NAME }} artifacts/felix-linux-x86_64
           echo "Artifacts:"
