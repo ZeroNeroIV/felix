@@ -247,6 +247,7 @@ component Toolbar {
     callback path-entered(string);
     callback search-changed(string);
     callback settings-clicked();
+    callback shortcuts-clicked();
 
     min-height: 44px;
     max-height: 48px;
@@ -293,6 +294,11 @@ component Toolbar {
                 edited(text) => { root.search-changed(text) }
                 min-width: 140px;
                 max-width: 200px;
+            }
+
+            StyledButton {
+                text: "?";
+                clicked => { root.shortcuts-clicked() }
             }
 
             StyledButton {
@@ -496,6 +502,7 @@ export component MainWindow inherits Window {
     callback file-activated(int);
     callback sort-requested(string);
     callback settings-clicked();
+    callback shortcuts-clicked();
 
     VerticalBox {
         spacing: 0;
@@ -511,6 +518,7 @@ export component MainWindow inherits Window {
             path-entered(p) => { root.path-entered(p) }
             search-changed(s) => { root.search-changed(s) }
             settings-clicked => { root.settings-clicked() }
+            shortcuts-clicked => { root.shortcuts-clicked() }
         }
 
         HorizontalBox {
@@ -692,6 +700,103 @@ export component SettingsDialog inherits Dialog {
                 primary: true;
                 clicked => { root.save-config(root.config-yaml) }
             }
+        }
+    }
+}
+
+export component ShortcutsDialog inherits Dialog {
+    title: "felix — Keyboard Shortcuts";
+    min-width: 420px;
+    min-height: 480px;
+    background: Tokens.bg-window;
+
+    callback close();
+
+    VerticalBox {
+        padding: 20px;
+        spacing: 16px;
+
+        Text {
+            text: "Keyboard Shortcuts";
+            font-size: 18px;
+            font-weight: 600;
+            color: Tokens.text-primary;
+        }
+
+        // Navigation
+        Text {
+            text: "Navigation";
+            font-size: Tokens.font-md;
+            font-weight: 600;
+            color: Tokens.accent;
+        }
+
+        VerticalBox {
+            spacing: 4px;
+            HorizontalBox { Text { text: "Enter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Open file or folder"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "Backspace"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Go to parent directory"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "h"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Go back in history"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "l"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Go forward in history"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "j"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Select next file"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "k"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Select previous file"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+        }
+
+        // Selection
+        Text {
+            text: "Selection";
+            font-size: Tokens.font-md;
+            font-weight: 600;
+            color: Tokens.accent;
+        }
+
+        VerticalBox {
+            spacing: 4px;
+            HorizontalBox { Text { text: "Click"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Select single file"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "Ctrl+Click"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Toggle selection"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "Shift+Click"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Select range"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "Ctrl+Shift+Click"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Extend range"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "Ctrl+A"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Select all"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+        }
+
+        // File Operations
+        Text {
+            text: "File Operations";
+            font-size: Tokens.font-md;
+            font-weight: 600;
+            color: Tokens.accent;
+        }
+
+        VerticalBox {
+            spacing: 4px;
+            HorizontalBox { Text { text: "Delete"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Delete selected"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "F2"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Rename selected"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "Ctrl+C"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Copy selected"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "Ctrl+X"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Cut selected"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "Ctrl+V"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Paste"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+        }
+
+        // Other
+        Text {
+            text: "Other";
+            font-size: Tokens.font-md;
+            font-weight: 600;
+            color: Tokens.accent;
+        }
+
+        VerticalBox {
+            spacing: 4px;
+            HorizontalBox { Text { text: "Ctrl+F"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Focus search"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "Ctrl+,"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Open settings"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "?"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Show shortcuts"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            HorizontalBox { Text { text: "F5"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Refresh"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+        }
+
+        Rectangle { vertical-stretch: 1; }
+
+        StyledButton {
+            text: "Close";
+            primary: true;
+            clicked => { root.close() }
         }
     }
 }

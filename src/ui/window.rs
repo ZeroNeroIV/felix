@@ -431,6 +431,29 @@ fn update_selection(
         window.set_status_message(format!("Sorted by {} {}", field_name, direction).into());
     });
 
+    // ─── Shortcuts dialog ───────────────────────────────────────────────────
+    let w_shortcuts = window.as_weak();
+    window.on_shortcuts_clicked(move || {
+        let window = w_shortcuts.unwrap();
+        
+        match ShortcutsDialog::new() {
+            Ok(dialog) => {
+                let w4: slint::Weak<MainWindow> = window.as_weak();
+                dialog.on_close(move || {
+                    if let Some(w) = w4.upgrade() {
+                        w.set_status_message("".into());
+                    }
+                });
+                
+                let _ = dialog.show();
+            }
+            Err(e) => {
+                log::error!("Failed to create shortcuts dialog: {}", e);
+                window.set_status_message("Error: Cannot open shortcuts".into());
+            }
+        }
+    });
+
     // ─── Settings dialog ───────────────────────────────────────────────────
     let w = window.as_weak();
     window.on_settings_clicked(move || {

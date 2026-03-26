@@ -136,17 +136,45 @@ ui:
 
 ## Keyboard Shortcuts
 
+### Navigation
+
 | Key         | Action                    |
 |-------------|---------------------------|
 | `Enter`     | Open file/folder          |
 | `Backspace` | Go to parent directory   |
-| `Space`     | Quick preview (planned)  |
-| `h` / `j`   | Navigation down          |
-| `k` / `l`   | Navigation up            |
-| `Delete`    | Delete selected          |
-| `F2`        | Rename selected          |
-| `Ctrl+F`    | Focus search             |
-| `Ctrl+,`    | Open settings            |
+| `h`         | Go back in history       |
+| `l`         | Go forward in history    |
+| `j`         | Select next file         |
+| `k`         | Select previous file     |
+
+### Selection
+
+| Key              | Action                    |
+|------------------|---------------------------|
+| `Click`          | Select single file        |
+| `Ctrl+Click`     | Toggle selection          |
+| `Shift+Click`    | Select range              |
+| `Ctrl+Shift+Click` | Extend range            |
+| `Ctrl+A`         | Select all                |
+
+### File Operations
+
+| Key         | Action                    |
+|-------------|---------------------------|
+| `Delete`    | Delete selected           |
+| `F2`        | Rename selected           |
+| `Ctrl+C`    | Copy selected             |
+| `Ctrl+X`    | Cut selected              |
+| `Ctrl+V`    | Paste                     |
+
+### Other
+
+| Key         | Action                    |
+|-------------|---------------------------|
+| `Ctrl+F`    | Focus search              |
+| `Ctrl+,`    | Open settings             |
+| `?`         | Show keyboard shortcuts  |
+| `F5`        | Refresh                  |
 
 ## Architecture
 
