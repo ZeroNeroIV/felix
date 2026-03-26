@@ -40,6 +40,7 @@ export struct FileEntry {
     size: string,
     modified: string,
     icon: string,
+    selected: bool,
 }
 
 export struct SidebarItem {
@@ -304,9 +305,9 @@ component Toolbar {
 
 component FileList {
     in property <[FileEntry]> files;
-    in property <int> selected-index: -1;
+    in property <[int]> selected-indices: [];
 
-    callback file-selected(int);
+    callback file-selected(int, bool, bool);  // index, ctrl-pressed, shift-pressed
     callback file-activated(int);
     callback sort-requested(string);
 
@@ -375,13 +376,14 @@ component FileList {
                 min-height: 30px;
                 max-height: 34px;
                 mouse-cursor: pointer;
-                clicked => { root.file-selected(index) }
-                double-clicked => { root.file-activated(index) }
+                clicked => { 
+                    root.file-selected(index, false, false) 
+                }
 
                 Rectangle {
                     width: 100%;
                     height: 100%;
-                    background: index == root.selected-index ? Tokens.bg-selected : (mod(index, 2) == 0 ? Tokens.bg-window : Tokens.bg-row-alt);
+                    background: entry.selected ? Tokens.bg-selected : (mod(index, 2) == 0 ? Tokens.bg-window : Tokens.bg-row-alt);
                 }
 
                 HorizontalBox {
@@ -478,7 +480,7 @@ export component MainWindow inherits Window {
     in property <[FileEntry]> files: [];
     in property <[SidebarItem]> sidebar-items: [];
     in property <string> sidebar-active-path: "";
-    in property <int> selected-index: -1;
+    in property <[int]> selected-indices: [];
     in property <bool> can-go-back: false;
     in property <bool> can-go-forward: false;
     in property <string> search-text: "";
@@ -490,7 +492,7 @@ export component MainWindow inherits Window {
     callback path-entered(string);
     callback search-changed(string);
     callback sidebar-item-clicked(string);
-    callback file-selected(int);
+    callback file-selected(int, bool, bool);
     callback file-activated(int);
     callback sort-requested(string);
     callback settings-clicked();
@@ -527,10 +529,10 @@ export component MainWindow inherits Window {
 
             FileList {
                 files: root.files;
-                selected-index: root.selected-index;
+                selected-indices: root.selected-indices;
                 horizontal-stretch: 1;
                 vertical-stretch: 1;
-                file-selected(i) => { root.file-selected(i) }
+                file-selected(i, ctrl, shift) => { root.file-selected(i, ctrl, shift) }
                 file-activated(i) => { root.file-activated(i) }
                 sort-requested(col) => { root.sort-requested(col) }
             }

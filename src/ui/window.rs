@@ -6,6 +6,7 @@ use crate::fs::browser::{self, SortField, SortDirection};
 use crate::search;
 use crate::config;
 use std::cell::RefCell;
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -61,8 +62,8 @@ impl NavState {
     }
 }
 
-/// Convert FileEntry to Slint FileEntry
-fn to_slint_entry(entry: &browser::FileEntry) -> FileEntry {
+/// Convert FileEntry to Slint FileEntry (with selection state)
+fn to_slint_entry(entry: &browser::FileEntry, selected: bool) -> FileEntry {
     FileEntry {
         name: entry.name.clone().into(),
         path: entry.path.to_string_lossy().to_string().into(),
@@ -70,6 +71,7 @@ fn to_slint_entry(entry: &browser::FileEntry) -> FileEntry {
         size: entry.size_display().into(),
         modified: entry.modified_display().into(),
         icon: entry.icon().into(),
+        selected,
     }
 }
 
@@ -139,10 +141,16 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     // Sorting state: track current sort field and direction
     let sort_state: Rc<RefCell<(SortField, SortDirection)>> = 
         Rc::new(RefCell::new((SortField::Name, SortDirection::Ascending)));
+    
+    // Selection state: track selected indices and anchor for shift-selection
+    let selected_indices: Rc<RefCell<std::collections::HashSet<usize>>> = 
+        Rc::new(RefCell::new(std::collections::HashSet::new()));
+    let anchor_index: Rc<RefCell<Option<usize>>> = 
+        Rc::new(RefCell::new(None));
 
     // Initial load
     let initial_path = browser::home_dir();
-    load_directory(&window, &nav, &files_cache, &initial_path);
+    load_directory(&window, &nav, &files_cache, &selected_indices, &anchor_index, &initial_path);
 
     // Set sidebar items
     let sidebar: slint::ModelRc<SidebarItem> =
@@ -154,63 +162,75 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     let w = window.as_weak();
     let nav_ref = nav.clone();
     let files_ref = files_cache.clone();
+    let sel_back = selected_indices.clone();
+    let anc_back = anchor_index.clone();
     window.on_go_back(move || {
         let window = w.unwrap();
         let mut nav = nav_ref.borrow_mut();
         if let Some(path) = nav.go_back() {
             let path = path.clone();
             drop(nav);
-            load_directory(&window, &nav_ref, &files_ref, &path);
+            load_directory(&window, &nav_ref, &files_ref, &sel_back, &anc_back, &path);
         }
     });
 
     let w = window.as_weak();
     let nav_ref = nav.clone();
     let files_ref = files_cache.clone();
+    let sel_fwd = selected_indices.clone();
+    let anc_fwd = anchor_index.clone();
     window.on_go_forward(move || {
         let window = w.unwrap();
         let mut nav = nav_ref.borrow_mut();
         if let Some(path) = nav.go_forward() {
             let path = path.clone();
             drop(nav);
-            load_directory(&window, &nav_ref, &files_ref, &path);
+            load_directory(&window, &nav_ref, &files_ref, &sel_fwd, &anc_fwd, &path);
         }
     });
 
     let w = window.as_weak();
     let nav_ref = nav.clone();
     let files_ref = files_cache.clone();
+    let sel_up = selected_indices.clone();
+    let anc_up = anchor_index.clone();
     window.on_go_up(move || {
         let window = w.unwrap();
         let current = nav_ref.borrow().current().clone();
         if let Some(parent) = browser::parent_dir(&current) {
-            load_directory(&window, &nav_ref, &files_ref, &parent);
+            load_directory(&window, &nav_ref, &files_ref, &sel_up, &anc_up, &parent);
         }
     });
 
     let w = window.as_weak();
     let nav_ref = nav.clone();
     let files_ref = files_cache.clone();
+    let sel_path = selected_indices.clone();
+    let anc_path = anchor_index.clone();
     window.on_path_entered(move |path_str| {
         let window = w.unwrap();
         let path = PathBuf::from(path_str.to_string());
         if path.is_dir() {
-            load_directory(&window, &nav_ref, &files_ref, &path);
+            load_directory(&window, &nav_ref, &files_ref, &sel_path, &anc_path, &path);
         }
     });
 
     let w = window.as_weak();
     let nav_ref = nav.clone();
     let files_ref = files_cache.clone();
+    let sel_side = selected_indices.clone();
+    let anc_side = anchor_index.clone();
     window.on_sidebar_item_clicked(move |path_str| {
         let window = w.unwrap();
         let path = PathBuf::from(path_str.to_string());
-        load_directory(&window, &nav_ref, &files_ref, &path);
+        load_directory(&window, &nav_ref, &files_ref, &sel_side, &anc_side, &path);
     });
 
     let w = window.as_weak();
     let nav_for_activated = nav.clone();
     let files_ref = files_cache.clone();
+    let sel_act = selected_indices.clone();
+    let anc_act = anchor_index.clone();
     window.on_file_activated(move |index| {
         let window = w.unwrap();
         let files = files_ref.borrow();
@@ -220,15 +240,102 @@ pub fn launch() -> Result<(), slint::PlatformError> {
                 drop(files);
                 let nav_ref2 = nav_for_activated.clone();
                 let files_ref2 = files_ref.clone();
-                load_directory(&window, &nav_ref2, &files_ref2, &path);
+                load_directory(&window, &nav_ref2, &files_ref2, &sel_act, &anc_act, &path);
             }
             // TODO: Open files with built-in tools
         }
     });
 
-    window.on_file_selected(|_index| {
-        // Update status bar with selection info
+    let sel_indices = selected_indices.clone();
+    let anchor = anchor_index.clone();
+    let files_sel = files_cache.clone();
+    let w = window.as_weak();
+    window.on_file_selected(move |index, ctrl, shift| {
+        let window = w.unwrap();
+        update_selection(
+            &window,
+            index as usize,
+            ctrl,
+            shift,
+            &sel_indices,
+            &anchor,
+            &files_sel,
+        );
     });
+
+/// Update file selection based on click behavior (Windows-style)
+/// - Plain click: single selection
+/// - Ctrl+click: toggle selection
+/// - Shift+click: range selection from anchor
+/// - Ctrl+Shift+click: extend range from anchor
+fn update_selection(
+    window: &MainWindow,
+    clicked_index: usize,
+    ctrl: bool,
+    shift: bool,
+    selected_indices: &Rc<RefCell<HashSet<usize>>>,
+    anchor_index: &Rc<RefCell<Option<usize>>>,
+    files_cache: &Rc<RefCell<Vec<browser::FileEntry>>>,
+) {
+    let mut indices = selected_indices.borrow_mut();
+    let mut anchor = anchor_index.borrow_mut();
+    let files = files_cache.borrow();
+    let file_count = files.len();
+    
+    if shift {
+        // Shift+click: select range from anchor to clicked
+        let anchor_pos = anchor.as_ref().unwrap_or(&clicked_index);
+        let start = (*anchor_pos).min(clicked_index);
+        let end = (*anchor_pos).max(clicked_index);
+        
+        if ctrl {
+            // Ctrl+Shift: extend range (add to existing selection)
+            for i in start..=end {
+                indices.insert(i);
+            }
+        } else {
+            // Shift only: new range selection
+            indices.clear();
+            for i in start..=end {
+                indices.insert(i);
+            }
+        }
+    } else if ctrl {
+        // Ctrl+click: toggle individual selection
+        if indices.contains(&clicked_index) {
+            indices.remove(&clicked_index);
+        } else {
+            indices.insert(clicked_index);
+        }
+        *anchor = Some(clicked_index);
+    } else {
+        // Plain click: single selection
+        indices.clear();
+        indices.insert(clicked_index);
+        *anchor = Some(clicked_index);
+    }
+    
+    // Update UI - convert files with selection state
+    let selected_vec: Vec<i32> = indices.iter().map(|&i| i as i32).collect();
+    let slint_files: Vec<FileEntry> = files
+        .iter()
+        .enumerate()
+        .map(|(i, e)| to_slint_entry(e, indices.contains(&i)))
+        .collect();
+    
+    let model: slint::ModelRc<FileEntry> =
+        Rc::new(slint::VecModel::from(slint_files)).into();
+    window.set_files(model);
+    window.set_selected_indices(
+        Rc::new(slint::VecModel::from(selected_vec)).into()
+    );
+    
+    // Update status bar
+    let count = indices.len();
+    window.set_status_message(
+        format!("{} selected", count).into()
+    );
+}
 
     let w = window.as_weak();
     let nav_ref = nav.clone();
@@ -240,7 +347,7 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         if query.is_empty() {
             // Restore cached directory listing
             let slint_files: Vec<FileEntry> =
-                files_for_search.borrow().iter().map(to_slint_entry).collect();
+                files_for_search.borrow().iter().map(|e| to_slint_entry(e, false)).collect();
             let model: slint::ModelRc<FileEntry> =
                 Rc::new(slint::VecModel::from(slint_files)).into();
             window.set_files(model);
@@ -253,7 +360,7 @@ pub fn launch() -> Result<(), slint::PlatformError> {
                     let slint_files: Vec<FileEntry> = paths
                         .iter()
                         .filter_map(|p| browser::FileEntry::from_path(p))
-                        .map(|e| to_slint_entry(&e))
+                        .map(|e| to_slint_entry(&e, false))
                         .collect();
                     let count = slint_files.len();
                     let model: slint::ModelRc<FileEntry> =
@@ -309,7 +416,7 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         browser::sort_entries(&mut files, sort.0, sort.1);
         
         // Update UI
-        let slint_files: Vec<FileEntry> = files.iter().map(to_slint_entry).collect();
+        let slint_files: Vec<FileEntry> = files.iter().map(|e| to_slint_entry(e, false)).collect();
         let model: slint::ModelRc<FileEntry> =
             Rc::new(slint::VecModel::from(slint_files)).into();
         window.set_files(model);
@@ -400,6 +507,8 @@ fn load_directory(
     window: &MainWindow,
     nav: &Rc<RefCell<NavState>>,
     files_cache: &Rc<RefCell<Vec<browser::FileEntry>>>,
+    selected_indices: &Rc<RefCell<HashSet<usize>>>,
+    anchor_index: &Rc<RefCell<Option<usize>>>,
     path: &Path,
 ) {
     match browser::list_directory(path) {
@@ -410,8 +519,12 @@ fn load_directory(
             // Update cache
             *files_cache.borrow_mut() = entries.clone();
 
+            // Clear selection on directory change
+            selected_indices.borrow_mut().clear();
+            *anchor_index.borrow_mut() = None;
+
             // Convert to Slint models
-            let slint_files: Vec<FileEntry> = entries.iter().map(to_slint_entry).collect();
+            let slint_files: Vec<FileEntry> = entries.iter().map(|e| to_slint_entry(e, false)).collect();
             let model: slint::ModelRc<FileEntry> =
                 Rc::new(slint::VecModel::from(slint_files)).into();
 
@@ -421,7 +534,9 @@ fn load_directory(
             window.set_can_go_back(nav.borrow().can_go_back());
             window.set_can_go_forward(nav.borrow().can_go_forward());
             window.set_sidebar_active_path(path.to_string_lossy().to_string().into());
-            window.set_selected_index(-1);
+            window.set_selected_indices(
+                Rc::new(slint::VecModel::from(vec![])).into()
+            );
             window.set_search_text("".into());
         }
         Err(e) => {
