@@ -2,7 +2,7 @@
 
 slint::include_modules!();
 
-use crate::fs::browser;
+use crate::fs::browser::{self, SortField, SortDirection};
 use crate::search;
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
@@ -134,6 +134,10 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     // Navigation state
     let nav = Rc::new(RefCell::new(NavState::new(browser::home_dir())));
     let files_cache: Rc<RefCell<Vec<browser::FileEntry>>> = Rc::new(RefCell::new(Vec::new()));
+    
+    // Sorting state: track current sort field and direction
+    let sort_state: Rc<RefCell<(SortField, SortDirection)>> = 
+        Rc::new(RefCell::new((SortField::Name, SortDirection::Ascending)));
 
     // Initial load
     let initial_path = browser::home_dir();
@@ -227,6 +231,7 @@ pub fn launch() -> Result<(), slint::PlatformError> {
 
     let w = window.as_weak();
     let nav_ref = nav.clone();
+    let files_for_search = files_cache.clone();
     window.on_search_changed(move |query| {
         let window = w.unwrap();
         let query = query.to_string();
@@ -234,7 +239,7 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         if query.is_empty() {
             // Restore cached directory listing
             let slint_files: Vec<FileEntry> =
-                files_cache.borrow().iter().map(to_slint_entry).collect();
+                files_for_search.borrow().iter().map(to_slint_entry).collect();
             let model: slint::ModelRc<FileEntry> =
                 Rc::new(slint::VecModel::from(slint_files)).into();
             window.set_files(model);
@@ -271,8 +276,51 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         }
     });
 
-    window.on_sort_requested(|_column| {
-        // TODO: Implement sorting
+    let sort_ref = sort_state.clone();
+    let files_for_sort = files_cache.clone();
+    let w = window.as_weak();
+    window.on_sort_requested(move |column| {
+        let window = w.unwrap();
+        let mut sort = sort_ref.borrow_mut();
+        
+        // Determine the field to sort by
+        let field = match column.as_str() {
+            "name" => SortField::Name,
+            "size" => SortField::Size,
+            "modified" => SortField::Modified,
+            _ => return,
+        };
+        
+        // Toggle direction if same field, otherwise default to ascending
+        if sort.0 == field {
+            sort.1 = if sort.1 == SortDirection::Ascending {
+                SortDirection::Descending
+            } else {
+                SortDirection::Ascending
+            };
+        } else {
+            sort.0 = field;
+            sort.1 = SortDirection::Ascending;
+        }
+        
+        // Sort the cached entries
+        let mut files = files_for_sort.borrow_mut();
+        browser::sort_entries(&mut files, sort.0, sort.1);
+        
+        // Update UI
+        let slint_files: Vec<FileEntry> = files.iter().map(to_slint_entry).collect();
+        let model: slint::ModelRc<FileEntry> =
+            Rc::new(slint::VecModel::from(slint_files)).into();
+        window.set_files(model);
+        
+        // Show sort indicator in status
+        let direction = if sort.1 == SortDirection::Ascending { "↑" } else { "↓" };
+        let field_name = match sort.0 {
+            SortField::Name => "name",
+            SortField::Size => "size",
+            SortField::Modified => "modified",
+        };
+        window.set_status_message(format!("Sorted by {} {}", field_name, direction).into());
     });
 
     window.run()

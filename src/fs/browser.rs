@@ -146,3 +146,53 @@ pub fn parent_dir(path: &Path) -> Option<PathBuf> {
 pub fn home_dir() -> PathBuf {
     dirs::home_dir().unwrap_or_else(|| PathBuf::from("/"))
 }
+
+/// Sorting fields
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SortField {
+    Name,
+    Size,
+    Modified,
+}
+
+/// Sort direction
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SortDirection {
+    Ascending,
+    Descending,
+}
+
+/// Sort entries by the specified field and direction
+pub fn sort_entries(entries: &mut Vec<FileEntry>, field: SortField, direction: SortDirection) {
+    let cmp = move |a: &FileEntry, b: &FileEntry| {
+        // Always keep directories first
+        if a.is_dir != b.is_dir {
+            return if a.is_dir {
+                std::cmp::Ordering::Less
+            } else {
+                std::cmp::Ordering::Greater
+            };
+        }
+
+        let ord = match field {
+            SortField::Name => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
+            SortField::Size => a.size.cmp(&b.size),
+            SortField::Modified => {
+                match (a.modified, b.modified) {
+                    (Some(at), Some(bt)) => at.cmp(&bt),
+                    (Some(_), None) => std::cmp::Ordering::Less,
+                    (None, Some(_)) => std::cmp::Ordering::Greater,
+                    (None, None) => std::cmp::Ordering::Equal,
+                }
+            }
+        };
+
+        if direction == SortDirection::Descending {
+            ord.reverse()
+        } else {
+            ord
+        }
+    };
+
+    entries.sort_by(cmp);
+}
