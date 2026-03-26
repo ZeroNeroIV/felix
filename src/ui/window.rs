@@ -4,6 +4,7 @@ slint::include_modules!();
 
 use crate::fs::browser::{self, SortField, SortDirection};
 use crate::search;
+use crate::config;
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
@@ -321,6 +322,74 @@ pub fn launch() -> Result<(), slint::PlatformError> {
             SortField::Modified => "modified",
         };
         window.set_status_message(format!("Sorted by {} {}", field_name, direction).into());
+    });
+
+    // ─── Settings dialog ───────────────────────────────────────────────────
+    let w = window.as_weak();
+    window.on_settings_clicked(move || {
+        let window = w.unwrap();
+        
+        // Load config and show settings dialog
+        match config::load() {
+            Ok(cfg) => {
+                let yaml = match config::to_yaml(&cfg) {
+                    Ok(y) => y,
+                    Err(e) => {
+                        log::error!("Failed to serialize config: {}", e);
+                        window.set_status_message("Error: Failed to load config".into());
+                        return;
+                    }
+                };
+                
+                // Create and show settings dialog
+                match SettingsDialog::new() {
+                    Ok(dialog) => {
+                        dialog.set_config_yaml(yaml.into());
+                        dialog.set_status_text("".into());
+                        
+                        let w2 = window.as_weak();
+                        let dialog_weak: slint::Weak<SettingsDialog> = dialog.as_weak();
+                        let w2: slint::Weak<MainWindow> = window.as_weak();
+                        dialog.on_save_config(move |yaml_str| {
+                            let yaml = yaml_str.to_string();
+                            match config::from_yaml(&yaml) {
+                                Ok(new_cfg) => {
+                                    if let Err(e) = config::save(&new_cfg) {
+                                        log::error!("Failed to save config: {}", e);
+                                    } else {
+                                        log::info!("Config saved successfully");
+                                        // Update main window status
+                                        if let Some(w) = w2.upgrade() {
+                                            w.set_status_message("Config saved!".into());
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    log::error!("Failed to parse config: {}", e);
+                                }
+                            }
+                        });
+                        
+                        let w3: slint::Weak<MainWindow> = window.as_weak();
+                        dialog.on_close_dialog(move || {
+                            if let Some(w) = w3.upgrade() {
+                                w.set_status_message("".into());
+                            }
+                        });
+                        
+                        let _ = dialog.show();
+                    }
+                    Err(e) => {
+                        log::error!("Failed to create settings dialog: {}", e);
+                        window.set_status_message("Error: Cannot open settings".into());
+                    }
+                }
+            }
+            Err(e) => {
+                log::error!("Failed to load config: {}", e);
+                window.set_status_message(format!("Error loading config: {}", e).into());
+            }
+        }
     });
 
     window.run()

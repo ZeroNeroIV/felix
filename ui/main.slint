@@ -245,6 +245,7 @@ component Toolbar {
     callback go-up();
     callback path-entered(string);
     callback search-changed(string);
+    callback settings-clicked();
 
     min-height: 44px;
     max-height: 48px;
@@ -291,6 +292,11 @@ component Toolbar {
                 edited(text) => { root.search-changed(text) }
                 min-width: 140px;
                 max-width: 200px;
+            }
+
+            StyledButton {
+                text: "⚙";
+                clicked => { root.settings-clicked() }
             }
         }
     }
@@ -487,6 +493,7 @@ export component MainWindow inherits Window {
     callback file-selected(int);
     callback file-activated(int);
     callback sort-requested(string);
+    callback settings-clicked();
 
     VerticalBox {
         spacing: 0;
@@ -501,6 +508,7 @@ export component MainWindow inherits Window {
             go-up => { root.go-up() }
             path-entered(p) => { root.path-entered(p) }
             search-changed(s) => { root.search-changed(s) }
+            settings-clicked => { root.settings-clicked() }
         }
 
         HorizontalBox {
@@ -596,6 +604,92 @@ export component SetupDialog inherits Dialog {
             text: "Get Started";
             primary: true;
             clicked => { root.setup-complete() }
+        }
+    }
+}
+
+export component SettingsDialog inherits Dialog {
+    title: "felix — Settings";
+    min-width: 500px;
+    min-height: 400px;
+    background: Tokens.bg-window;
+
+    in-out property <string> config-yaml: "";
+    in-out property <string> status-text: "";
+
+    callback save-config(string);
+    callback close-dialog();
+
+    VerticalBox {
+        padding: 20px;
+        spacing: 16px;
+
+        Text {
+            text: "Configuration";
+            font-size: 18px;
+            font-weight: 600;
+            color: Tokens.text-primary;
+        }
+
+        Text {
+            text: "Edit the YAML configuration below:";
+            font-size: Tokens.font-sm;
+            color: Tokens.text-secondary;
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            background: Tokens.bg-input;
+            border-radius: 4px;
+
+            Rectangle {
+                x: 0; y: 0; width: parent.width; height: 1px;
+                background: Tokens.border;
+            }
+            Rectangle {
+                x: 0; y: 0; width: 1px; height: parent.height;
+                background: Tokens.border;
+            }
+            Rectangle {
+                x: 0; y: parent.height - 1px; width: parent.width; height: 1px;
+                background: Tokens.border;
+            }
+            Rectangle {
+                x: parent.width - 1px; y: 0; width: 1px; height: parent.height;
+                background: Tokens.border;
+            }
+
+            TextInput {
+                text: root.config-yaml;
+                font-size: Tokens.font-sm;
+                color: Tokens.text-primary;
+                wrap: word-wrap;
+                vertical-stretch: 1;
+                horizontal-stretch: 1;
+            }
+        }
+
+        Text {
+            text: root.status-text;
+            font-size: Tokens.font-xs;
+            color: root.status-text == "Saved!" ? Tokens.primary : Tokens.accent;
+        }
+
+        HorizontalBox {
+            spacing: 12px;
+
+            StyledButton {
+                text: "Cancel";
+                clicked => { root.close-dialog() }
+            }
+
+            Rectangle { horizontal-stretch: 1; }
+
+            StyledButton {
+                text: "Save";
+                primary: true;
+                clicked => { root.save-config(root.config-yaml) }
+            }
         }
     }
 }
