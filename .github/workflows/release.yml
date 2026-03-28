@@ -89,11 +89,25 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          echo "Creating tag $TAG"
+          echo "Processing tag $TAG"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag $TAG
-          git push origin $TAG
+          
+          # Check if tag already exists locally
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists locally"
+          else
+            echo "Creating tag $TAG"
+            git tag $TAG
+          fi
+          
+          # Check if tag already exists remotely
+          if git ls-remote --tags origin "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists in remote repository"
+          else
+            echo "Pushing tag $TAG to remote"
+            git push origin $TAG
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
