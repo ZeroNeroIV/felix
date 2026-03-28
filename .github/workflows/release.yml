@@ -78,12 +78,12 @@ jobs:
           cargo install cargo-deb
           cargo install cargo-generate-rpm
 
-      - name: Get version
-        id: version
-        run: |
-          VERSION=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+       - name: Get version
+         id: version
+         run: |
+           VERSION=$(grep -o 'version = "[^"]*"' Cargo.toml | head -1 | cut -d'"' -f2)
+           echo "version=$VERSION" >> $GITHUB_OUTPUT
+           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create and push tag
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -155,23 +155,23 @@ jobs:
     permissions:
       contents: write
 
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts/
-
-      - name: List artifacts
-        run: find artifacts/ -type f -ls
-
-      - name: Get version
-        id: version
-        run: |
-          VERSION=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Create GitHub Release
+     steps:
+       - name: Download artifacts
+         uses: actions/download-artifact@v4
+         with:
+           path: artifacts/
+ 
+       - name: List artifacts
+         run: find artifacts/ -type f -ls
+ 
+       - name: Get version
+         id: version
+         run: |
+           VERSION=$(grep -o 'version = "[^"]*"' Cargo.toml | head -1 | cut -d'"' -f2)
+           echo "version=$VERSION" >> $GITHUB_OUTPUT
+           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+ 
+       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
