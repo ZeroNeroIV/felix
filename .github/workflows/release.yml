@@ -156,14 +156,17 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
- 
+
       - name: List artifacts
         run: find artifacts/ -type f -ls
- 
+
       - name: Get version
         id: version
         run: |
