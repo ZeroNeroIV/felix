@@ -5,6 +5,7 @@ slint::include_modules!();
 use crate::fs::browser::{self, SortField, SortDirection};
 use crate::search;
 use crate::config;
+use crate::viewers::{self, FileType};
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
@@ -241,8 +242,32 @@ pub fn launch() -> Result<(), slint::PlatformError> {
                 let nav_ref2 = nav_for_activated.clone();
                 let files_ref2 = files_ref.clone();
                 load_directory(&window, &nav_ref2, &files_ref2, &sel_act, &anc_act, &path);
+            } else {
+                let path = entry.path.clone();
+                drop(files);
+                let file_type = viewers::detect_file_type(&path);
+                match config::load() {
+                    Ok(cfg) => {
+                        match viewers::launch_viewer(file_type, &path, &cfg.viewers) {
+                            Ok(_) => {
+                                let viewer_name = match file_type {
+                                    FileType::Image => &cfg.viewers.image_viewer,
+                                    FileType::Video => &cfg.viewers.video_viewer,
+                                    FileType::Pdf => &cfg.viewers.pdf_viewer,
+                                    _ => "file",
+                                };
+                                window.set_status_message(format!("Opening with {}...", viewer_name).into());
+                            }
+                            Err(e) => {
+                                window.set_status_message(format!("Error: {}", e).into());
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        window.set_status_message(format!("Error loading config: {}", e).into());
+                    }
+                }
             }
-            // TODO: Open files with built-in tools
         }
     });
 
@@ -458,55 +483,105 @@ fn update_selection(
     let w = window.as_weak();
     window.on_settings_clicked(move || {
         let window = w.unwrap();
-        
-        // Load config and show settings dialog
+
         match config::load() {
             Ok(cfg) => {
-                let yaml = match config::to_yaml(&cfg) {
-                    Ok(y) => y,
-                    Err(e) => {
-                        log::error!("Failed to serialize config: {}", e);
-                        window.set_status_message("Error: Failed to load config".into());
-                        return;
-                    }
-                };
-                
-                // Create and show settings dialog
                 match SettingsDialog::new() {
                     Ok(dialog) => {
-                        dialog.set_config_yaml(yaml.into());
-                        dialog.set_status_text("".into());
-                        
-                        let w2 = window.as_weak();
-                        let dialog_weak: slint::Weak<SettingsDialog> = dialog.as_weak();
+                        // Populate form with current config
+                        dialog.set_show_hidden(cfg.general.show_hidden);
+                        dialog.set_confirm_delete(cfg.general.confirm_delete);
+                        dialog.set_page_size(cfg.general.page_size as i32);
+
+                        // Theme mode: 0=System, 1=Light, 2=Dark
+                        let theme_mode = match cfg.theme.mode {
+                            config::ThemeMode::System => 0,
+                            config::ThemeMode::Light => 1,
+                            config::ThemeMode::Dark => 2,
+                        };
+                        dialog.set_theme_mode(theme_mode);
+                        dialog.set_accent_color(cfg.theme.accent_color.clone().into());
+
+                        // Tools
+                        dialog.set_markdown_preview(cfg.tools.markdown_preview);
+                        dialog.set_pdf_preview(cfg.tools.pdf_preview);
+                        dialog.set_docx_preview(cfg.tools.docx_preview);
+                        dialog.set_pptx_preview(cfg.tools.pptx_preview);
+
+                        // Sidebar
+                        dialog.set_show_devices(cfg.sidebar.show_devices);
+                        dialog.set_show_bookmarks(cfg.sidebar.show_bookmarks);
+
+                        // Viewers
+                        dialog.set_image_viewer(cfg.viewers.image_viewer.clone().into());
+                        dialog.set_video_viewer(cfg.viewers.video_viewer.clone().into());
+                        dialog.set_pdf_viewer(cfg.viewers.pdf_viewer.clone().into());
+
+                        // Save callback
                         let w2: slint::Weak<MainWindow> = window.as_weak();
-                        dialog.on_save_config(move |yaml_str| {
-                            let yaml = yaml_str.to_string();
-                            match config::from_yaml(&yaml) {
-                                Ok(new_cfg) => {
-                                    if let Err(e) = config::save(&new_cfg) {
-                                        log::error!("Failed to save config: {}", e);
-                                    } else {
-                                        log::info!("Config saved successfully");
-                                        // Update main window status
-                                        if let Some(w) = w2.upgrade() {
-                                            w.set_status_message("Config saved!".into());
-                                        }
-                                    }
+                        let dialog_weak = dialog.as_weak();
+                        dialog.on_save_config(move || {
+                            let dialog = dialog_weak.upgrade().unwrap();
+                            let new_cfg = config::Config {
+                                general: config::GeneralConfig {
+                                    show_hidden: dialog.get_show_hidden(),
+                                    confirm_delete: dialog.get_confirm_delete(),
+                                    page_size: dialog.get_page_size() as usize,
+                                },
+                                theme: config::ThemeConfig {
+                                    mode: match dialog.get_theme_mode() {
+                                        0 => config::ThemeMode::System,
+                                        1 => config::ThemeMode::Light,
+                                        _ => config::ThemeMode::Dark,
+                                    },
+                                    accent_color: dialog.get_accent_color().to_string(),
+                                },
+                                tools: config::ToolsConfig {
+                                    enabled: {
+                                        let mut tools = Vec::new();
+                                        if dialog.get_markdown_preview() { tools.push("markdown".to_string()); }
+                                        if dialog.get_pdf_preview() { tools.push("pdf".to_string()); }
+                                        if dialog.get_docx_preview() { tools.push("docx".to_string()); }
+                                        if dialog.get_pptx_preview() { tools.push("pptx".to_string()); }
+                                        tools
+                                    },
+                                    markdown_preview: dialog.get_markdown_preview(),
+                                    pdf_preview: dialog.get_pdf_preview(),
+                                    docx_preview: dialog.get_docx_preview(),
+                                    pptx_preview: dialog.get_pptx_preview(),
+                                },
+                                sidebar: config::SidebarConfig {
+                                    favorites: cfg.sidebar.favorites.clone(),
+                                    show_devices: dialog.get_show_devices(),
+                                    show_bookmarks: dialog.get_show_bookmarks(),
+                                },
+                                ui: cfg.ui.clone(),
+                                viewers: config::ViewerConfig {
+                                    image_viewer: dialog.get_image_viewer().to_string(),
+                                    video_viewer: dialog.get_video_viewer().to_string(),
+                                    pdf_viewer: dialog.get_pdf_viewer().to_string(),
+                                },
+                            };
+
+                            if let Err(e) = config::save(&new_cfg) {
+                                log::error!("Failed to save config: {}", e);
+                                if let Some(w) = w2.upgrade() {
+                                    w.set_status_message(format!("Error saving config: {}", e).into());
                                 }
-                                Err(e) => {
-                                    log::error!("Failed to parse config: {}", e);
+                            } else {
+                                log::info!("Config saved successfully");
+                                if let Some(w) = w2.upgrade() {
+                                    w.set_status_message("Settings saved!".into());
                                 }
                             }
                         });
-                        
-                        let w3: slint::Weak<MainWindow> = window.as_weak();
+
                         dialog.on_close_dialog(move || {
-                            if let Some(w) = w3.upgrade() {
+                            if let Some(w) = window.as_weak().upgrade() {
                                 w.set_status_message("".into());
                             }
                         });
-                        
+
                         let _ = dialog.show();
                     }
                     Err(e) => {

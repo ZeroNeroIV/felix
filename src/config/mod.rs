@@ -11,6 +11,8 @@ pub struct Config {
     pub sidebar: SidebarConfig,
     #[serde(default)]
     pub ui: UiConfig,
+    #[serde(default)]
+    pub viewers: ViewerConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -76,6 +78,31 @@ pub struct UiConfig {
     pub window_width: Option<u32>,
     #[serde(default)]
     pub window_height: Option<u32>,
+}
+
+/// External viewer configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ViewerConfig {
+    #[serde(default = "default_image_viewer")]
+    pub image_viewer: String,
+    #[serde(default = "default_video_viewer")]
+    pub video_viewer: String,
+    #[serde(default = "default_pdf_viewer")]
+    pub pdf_viewer: String,
+}
+
+fn default_image_viewer() -> String { "imv".to_string() }
+fn default_video_viewer() -> String { "mpv".to_string() }
+fn default_pdf_viewer() -> String { "zathura".to_string() }
+
+impl Default for ViewerConfig {
+    fn default() -> Self {
+        Self {
+            image_viewer: default_image_viewer(),
+            video_viewer: default_video_viewer(),
+            pdf_viewer: default_pdf_viewer(),
+        }
+    }
 }
 
 /// Get config directory (for standard config)
@@ -151,6 +178,7 @@ fn default_config() -> Config {
             show_bookmarks: true,
         },
         ui: UiConfig::default(),
+        viewers: ViewerConfig::default(),
     }
 }
 

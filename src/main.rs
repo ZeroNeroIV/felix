@@ -4,6 +4,7 @@ mod fs;
 mod search;
 mod tools;
 mod ui;
+mod viewers;
 
 fn main() {
     // Initialize logging
@@ -25,6 +26,7 @@ fn main() {
     log::info!("Enabled tools: {:?}", config.tools.enabled);
     log::info!("Theme mode: {:?}", config.theme.mode);
     log::info!("Show hidden: {:?}", config.general.show_hidden);
+    log::info!("Viewer config: {:?}", config.viewers);
 
     // Launch the UI
     log::info!("Launching UI...");
