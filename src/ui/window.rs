@@ -129,6 +129,106 @@ fn default_sidebar_items() -> Vec<SidebarItem> {
     ]
 }
 
+fn hex_to_color(hex: &str) -> Option<slint::Color> {
+    let hex = hex.trim_start_matches('#');
+    if hex.len() == 6 {
+        let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
+        let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
+        let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
+        Some(slint::Color::from_rgb_u8(r, g, b))
+    } else {
+        None
+    }
+}
+
+fn apply_theme_colors(window: &MainWindow, theme_colors: &config::ThemeColors) {
+    let tokens = Tokens::get(window);
+    if let Some(color) = &theme_colors.bg_window {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_window(c);
+            tokens.set_dark_bg_window(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_surface {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_surface(c);
+            tokens.set_dark_bg_surface(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_sidebar {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_sidebar(c);
+            tokens.set_dark_bg_sidebar(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_toolbar {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_toolbar(c);
+            tokens.set_dark_bg_toolbar(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_header {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_header(c);
+            tokens.set_dark_bg_header(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_status {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_status(c);
+            tokens.set_dark_bg_status(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_row_alt {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_row_alt(c);
+            tokens.set_dark_bg_row_alt(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_hover {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_hover(c);
+            tokens.set_dark_bg_hover(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_input {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_input(c);
+            tokens.set_dark_bg_input(c);
+        }
+    }
+    if let Some(color) = &theme_colors.text_primary {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_text_primary(c);
+            tokens.set_dark_text_primary(c);
+        }
+    }
+    if let Some(color) = &theme_colors.text_secondary {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_text_secondary(c);
+            tokens.set_dark_text_secondary(c);
+        }
+    }
+    if let Some(color) = &theme_colors.text_tertiary {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_text_tertiary(c);
+            tokens.set_dark_text_tertiary(c);
+        }
+    }
+    if let Some(color) = &theme_colors.border {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_border(c);
+            tokens.set_dark_border(c);
+        }
+    }
+    if let Some(color) = &theme_colors.border_subtle {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_border_subtle(c);
+            tokens.set_dark_border_subtle(c);
+        }
+    }
+}
+
 /// Launch the main application window
 pub fn launch() -> Result<(), slint::PlatformError> {
     let window = MainWindow::new()?;
@@ -143,6 +243,8 @@ pub fn launch() -> Result<(), slint::PlatformError> {
             theme: config::ThemeConfig {
                 mode: config::ThemeMode::System,
                 accent_color: "#58a6ff".to_string(),
+                light_colors: config::ThemeColors::default(),
+                dark_colors: config::ThemeColors::default(),
             },
             tools: config::ToolsConfig {
                 enabled: vec!["markdown".to_string(), "pdf".to_string()],
@@ -177,6 +279,32 @@ pub fn launch() -> Result<(), slint::PlatformError> {
 
     // Current config (shared, mutable)
     let current_cfg: Rc<RefCell<config::Config>> = Rc::new(RefCell::new(initial_cfg));
+
+    let theme_mode = current_cfg.borrow().theme.mode.clone();
+    let colors_to_apply = match theme_mode {
+        config::ThemeMode::Light => current_cfg.borrow().theme.light_colors.clone(),
+        config::ThemeMode::Dark => current_cfg.borrow().theme.dark_colors.clone(),
+        config::ThemeMode::System => {
+            #[cfg(target_os = "macos")]
+            {
+                use std::process::Command;
+                if let Ok(output) = Command::new("defaults").args(["read", "-g", "AppleInterfaceStyle"]).output() {
+                    if output.stdout.trim().to_lowercase() == "dark" {
+                        current_cfg.borrow().theme.dark_colors.clone()
+                    } else {
+                        current_cfg.borrow().theme.light_colors.clone()
+                    }
+                } else {
+                    current_cfg.borrow().theme.light_colors.clone()
+                }
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                current_cfg.borrow().theme.light_colors.clone()
+            }
+        }
+    };
+    apply_theme_colors(&window, &colors_to_apply);
 
     // Initial load
     let initial_path = browser::home_dir();
@@ -620,6 +748,8 @@ fn update_selection(
                                         _ => config::ThemeMode::Dark,
                                     },
                                     accent_color: dialog.get_accent_color().to_string(),
+                                    light_colors: cfg_ref.borrow().theme.light_colors.clone(),
+                                    dark_colors: cfg_ref.borrow().theme.dark_colors.clone(),
                                 },
                                 tools: config::ToolsConfig {
                                     enabled: {

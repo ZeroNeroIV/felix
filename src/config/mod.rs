@@ -34,6 +34,44 @@ pub struct ThemeConfig {
     pub mode: ThemeMode,
     #[serde(default = "default_accent_string")]
     pub accent_color: String,
+    #[serde(default)]
+    pub light_colors: ThemeColors,
+    #[serde(default)]
+    pub dark_colors: ThemeColors,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ThemeColors {
+    #[serde(default)]
+    pub bg_window: Option<String>,
+    #[serde(default)]
+    pub bg_surface: Option<String>,
+    #[serde(default)]
+    pub bg_sidebar: Option<String>,
+    #[serde(default)]
+    pub bg_toolbar: Option<String>,
+    #[serde(default)]
+    pub bg_header: Option<String>,
+    #[serde(default)]
+    pub bg_status: Option<String>,
+    #[serde(default)]
+    pub bg_row_alt: Option<String>,
+    #[serde(default)]
+    pub bg_hover: Option<String>,
+    #[serde(default)]
+    pub bg_selected: Option<String>,
+    #[serde(default)]
+    pub bg_input: Option<String>,
+    #[serde(default)]
+    pub text_primary: Option<String>,
+    #[serde(default)]
+    pub text_secondary: Option<String>,
+    #[serde(default)]
+    pub text_tertiary: Option<String>,
+    #[serde(default)]
+    pub border: Option<String>,
+    #[serde(default)]
+    pub border_subtle: Option<String>,
 }
 
 fn default_theme_mode() -> ThemeMode { ThemeMode::System }
@@ -164,6 +202,8 @@ fn default_config() -> Config {
         theme: ThemeConfig {
             mode: ThemeMode::System,
             accent_color: "#58a6ff".to_string(),
+            light_colors: ThemeColors::default(),
+            dark_colors: ThemeColors::default(),
         },
         tools: ToolsConfig {
             enabled: vec!["markdown".to_string(), "pdf".to_string()],

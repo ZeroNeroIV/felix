@@ -113,6 +113,13 @@ general:
 theme:
   mode: System  # Light, Dark, or System
   accent_color: "#58a6ff"
+  # Optional: custom color overrides for each theme
+  light_colors:
+    bg_window: "#f5f5f0"
+    text_primary: "#3a3a3c"
+  dark_colors:
+    bg_window: "#1a1b26"
+    text_primary: "#c0caf5"
 
 tools:
   enabled:
