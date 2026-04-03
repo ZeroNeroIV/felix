@@ -4,6 +4,7 @@ mod fs;
 mod search;
 mod tools;
 mod ui;
+mod viewer;
 mod viewers;
 
 fn main() {

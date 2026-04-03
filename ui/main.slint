@@ -1,43 +1,87 @@
 import { Button, LineEdit, HorizontalBox, VerticalBox, CheckBox, ListView, SpinBox, ScrollView, ComboBox } from "std-widgets.slint";
 
 global Tokens {
-    // Background colors - Premium dark theme
-    out property <color> bg-window: #0a0a0b;
-    out property <color> bg-surface: #111113;
-    out property <color> bg-sidebar: #0e0e10;
-    out property <color> bg-toolbar: #0a0a0b;
-    out property <color> bg-header: #111113;
-    out property <color> bg-status: #0a0a0b;
-    out property <color> bg-row-alt: #0e0e10;
-    out property <color> bg-hover: #1a1a1c;
-    out property <color> bg-selected: #c9a22740;
-    out property <color> bg-selected-hover: #c9a22760;
-    out property <color> bg-input: #111113;
+    // Theme mode: 0=System, 1=Light, 2=Dark
+    in-out property <int> theme-mode: 0;
 
-    // Brand colors - Luxurious gold accent
+    // Light mode colors - warm whites
+    out property <color> light-bg-window: #f8f9fa;
+    out property <color> light-bg-surface: #ffffff;
+    out property <color> light-bg-sidebar: #f1f3f5;
+    out property <color> light-bg-toolbar: #ffffff;
+    out property <color> light-bg-header: #f8f9fa;
+    out property <color> light-bg-status: #ffffff;
+    out property <color> light-bg-row-alt: #f1f3f5;
+    out property <color> light-bg-hover: #e9ecef;
+    out property <color> light-bg-selected: #c9a22720;
+    out property <color> light-bg-input: #ffffff;
+    out property <color> light-text-primary: #1a1a2e;
+    out property <color> light-text-secondary: #495057;
+    out property <color> light-text-tertiary: #868e96;
+    out property <color> light-text-on-primary: #ffffff;
+    out property <color> light-border: #dee2e6;
+    out property <color> light-border-subtle: #e9ecef;
+    out property <color> light-shadow: #00000015;
+
+    // Dark mode colors - warm darks
+    out property <color> dark-bg-window: #0d0d0f;
+    out property <color> dark-bg-surface: #161618;
+    out property <color> dark-bg-sidebar: #111113;
+    out property <color> dark-bg-toolbar: #161618;
+    out property <color> dark-bg-header: #111113;
+    out property <color> dark-bg-status: #0d0d0f;
+    out property <color> dark-bg-row-alt: #111113;
+    out property <color> dark-bg-hover: #1e1e21;
+    out property <color> dark-bg-selected: #c9a22730;
+    out property <color> dark-bg-input: #161618;
+    out property <color> dark-text-primary: #e4e4e7;
+    out property <color> dark-text-secondary: #a1a1aa;
+    out property <color> dark-text-tertiary: #6b6b72;
+    out property <color> dark-text-on-primary: #0d0d0f;
+    out property <color> dark-border: #2a2a2e;
+    out property <color> dark-border-subtle: #222226;
+    out property <color> dark-shadow: #00000050;
+
+    // Active colors based on theme mode
+    out property <color> bg-window: Tokens.theme-mode == 1 ? Tokens.light-bg-window : Tokens.dark-bg-window;
+    out property <color> bg-surface: Tokens.theme-mode == 1 ? Tokens.light-bg-surface : Tokens.dark-bg-surface;
+    out property <color> bg-sidebar: Tokens.theme-mode == 1 ? Tokens.light-bg-sidebar : Tokens.dark-bg-sidebar;
+    out property <color> bg-toolbar: Tokens.theme-mode == 1 ? Tokens.light-bg-toolbar : Tokens.dark-bg-toolbar;
+    out property <color> bg-header: Tokens.theme-mode == 1 ? Tokens.light-bg-header : Tokens.dark-bg-header;
+    out property <color> bg-status: Tokens.theme-mode == 1 ? Tokens.light-bg-status : Tokens.dark-bg-status;
+    out property <color> bg-row-alt: Tokens.theme-mode == 1 ? Tokens.light-bg-row-alt : Tokens.dark-bg-row-alt;
+    out property <color> bg-hover: Tokens.theme-mode == 1 ? Tokens.light-bg-hover : Tokens.dark-bg-hover;
+    out property <color> bg-selected: Tokens.theme-mode == 1 ? Tokens.light-bg-selected : Tokens.dark-bg-selected;
+    out property <color> bg-input: Tokens.theme-mode == 1 ? Tokens.light-bg-input : Tokens.dark-bg-input;
+    out property <color> text-primary: Tokens.theme-mode == 1 ? Tokens.light-text-primary : Tokens.dark-text-primary;
+    out property <color> text-secondary: Tokens.theme-mode == 1 ? Tokens.light-text-secondary : Tokens.dark-text-secondary;
+    out property <color> text-tertiary: Tokens.theme-mode == 1 ? Tokens.light-text-tertiary : Tokens.dark-text-tertiary;
+    out property <color> text-on-primary: Tokens.theme-mode == 1 ? Tokens.light-text-on-primary : Tokens.dark-text-on-primary;
+    out property <color> border: Tokens.theme-mode == 1 ? Tokens.light-border : Tokens.dark-border;
+    out property <color> border-subtle: Tokens.theme-mode == 1 ? Tokens.light-border-subtle : Tokens.dark-border-subtle;
+    out property <color> shadow: Tokens.theme-mode == 1 ? Tokens.light-shadow : Tokens.dark-shadow;
+
+    // Brand colors - Luxurious gold accent (works on both themes)
     out property <color> primary: #c9a227;
     out property <color> secondary: #d4b84a;
     out property <color> accent: #e8d48a;
     out property <color> primary-soft: #c9a22730;
     out property <color> primary-hover: #d4b84a;
 
-    // Text colors - Warm whites
-    out property <color> text-primary: #e4e4e7;
-    out property <color> text-secondary: #a1a1aa;
-    out property <color> text-tertiary: #71717a;
-    out property <color> text-on-primary: #0a0a0b;
+    // Text colors
     out property <color> text-header: #c9a227;
-
-    // Borders - Subtle and refined
-    out property <color> border: #27272a;
-    out property <color> border-subtle: #1f1f22;
     out property <color> border-focus: #c9a227;
 
-    // Typography - Inter with refined scale
+    // Typography - Premium scale
     out property <length> font-xs: 11px;
     out property <length> font-sm: 13px;
     out property <length> font-md: 14px;
-    out property <length> font-lg: 15px;
+    out property <length> font-lg: 16px;
+    out property <length> font-xl: 22px;
+    out property <int> font-weight-regular: 400;
+    out property <int> font-weight-medium: 500;
+    out property <int> font-weight-semibold: 600;
+    out property <int> font-weight-bold: 700;
 }
 
 export struct FileEntry {
@@ -78,7 +122,15 @@ component StyledButton {
             border-radius: 8px;
             background: root.primary ? Tokens.primary : (root.enabled ? Tokens.bg-surface : Tokens.bg-row-alt);
 
-            // Subtle border
+            // Subtle shadow effect for depth
+            Rectangle {
+                x: 1px; y: 1px; width: parent.width - 2px; height: parent.height - 2px;
+                border-radius: 7px;
+                background: root.primary ? Tokens.secondary : (root.enabled ? Tokens.bg-hover : Tokens.bg-row-alt);
+                opacity: root.primary ? 0 : (root.enabled ? 0.5 : 0);
+            }
+
+            // Border rectangles (top, left, bottom, right)
             Rectangle {
                 x: 0; y: 0; width: parent.width; height: 1px;
                 background: root.primary ? Tokens.primary : Tokens.border-subtle;
@@ -100,7 +152,7 @@ component StyledButton {
                 text: root.text;
                 font-family: "Inter";
                 font-size: root.compact ? Tokens.font-xs : Tokens.font-sm;
-                font-weight: root.primary ? 600 : 500;
+                font-weight: root.primary ? Tokens.font-weight-semibold : Tokens.font-weight-medium;
                 color: root.primary ? Tokens.text-on-primary : (root.enabled ? Tokens.text-secondary : Tokens.text-tertiary);
                 horizontal-alignment: center;
                 vertical-alignment: center;
@@ -124,7 +176,15 @@ component StyledInput {
         background: Tokens.bg-input;
         border-radius: 8px;
 
-        // Subtle border
+        // Subtle shadow inside
+        Rectangle {
+            x: 1px; y: 1px; width: parent.width - 2px; height: parent.height - 2px;
+            border-radius: 7px;
+            background: Tokens.shadow;
+            opacity: 0.5;
+        }
+
+        // Border rectangles
         Rectangle {
             x: 0; y: 0; width: parent.width; height: 1px;
             background: Tokens.border-subtle;
@@ -167,44 +227,74 @@ component Sidebar {
     Rectangle {
         background: Tokens.bg-sidebar;
 
+        // Right shadow effect
+        Rectangle {
+            x: parent.width - 8px;
+            y: 0;
+            width: 8px;
+            height: parent.height;
+            background: Tokens.shadow;
+            opacity: 0.6;
+        }
+
+        // Right shadow layer 2
+        Rectangle {
+            x: parent.width - 4px;
+            y: 0;
+            width: 4px;
+            height: parent.height;
+            background: Tokens.shadow;
+            opacity: 0.4;
+        }
+
         VerticalBox {
-            padding: 20px;
-            spacing: 6px;
+            padding: 16px;
+            spacing: 8px;
 
             // Favorites section header
             Text {
                 text: "FAVORITES";
                 font-family: "Inter";
                 font-size: Tokens.font-xs;
-                font-weight: 600;
+                font-weight: Tokens.font-weight-semibold;
                 color: Tokens.text-tertiary;
                 letter-spacing: 1px;
             }
 
             for item in root.items : TouchArea {
                 visible: item.section == "favorites";
-                height: 40px;
+                height: 44px;
                 mouse-cursor: pointer;
                 clicked => { root.item-clicked(item.path) }
 
                 Rectangle {
                     background: item.path == root.active-path ? Tokens.bg-selected : transparent;
-                    border-radius: 8px;
+                    border-radius: 12px;
+
+                    // Active indicator
+                    Rectangle {
+                        x: 0; y: 8px; width: 3px; height: 28px;
+                        background: item.path == root.active-path ? Tokens.primary : transparent;
+                        border-radius: 2px;
+                    }
 
                     HorizontalBox {
-                        padding-left: 14px;
+                        padding-left: 12px;
+                        padding-right: 12px;
+                        padding-top: 12px;
+                        padding-bottom: 12px;
                         spacing: 12px;
 
                         Text {
                             text: item.icon;
-                            font-size: Tokens.font-md;
+                            font-size: Tokens.font-lg;
                             vertical-alignment: center;
                         }
                         Text {
                             text: item.name;
                             font-family: "Inter";
                             font-size: Tokens.font-sm;
-                            font-weight: item.path == root.active-path ? 500 : 400;
+                            font-weight: item.path == root.active-path ? Tokens.font-weight-medium : Tokens.font-weight-regular;
                             color: item.path == root.active-path ? Tokens.text-primary : Tokens.text-secondary;
                             vertical-alignment: center;
                         }
@@ -219,35 +309,45 @@ component Sidebar {
                 text: "DEVICES";
                 font-family: "Inter";
                 font-size: Tokens.font-xs;
-                font-weight: 600;
+                font-weight: Tokens.font-weight-semibold;
                 color: Tokens.text-tertiary;
                 letter-spacing: 1px;
             }
 
             for item in root.items : TouchArea {
                 visible: item.section == "devices";
-                height: 40px;
+                height: 44px;
                 mouse-cursor: pointer;
                 clicked => { root.item-clicked(item.path) }
 
                 Rectangle {
                     background: item.path == root.active-path ? Tokens.bg-selected : transparent;
-                    border-radius: 8px;
+                    border-radius: 12px;
+
+                    // Active indicator
+                    Rectangle {
+                        x: 0; y: 8px; width: 3px; height: 28px;
+                        background: item.path == root.active-path ? Tokens.primary : transparent;
+                        border-radius: 2px;
+                    }
 
                     HorizontalBox {
-                        padding-left: 14px;
+                        padding-left: 12px;
+                        padding-right: 12px;
+                        padding-top: 12px;
+                        padding-bottom: 12px;
                         spacing: 12px;
 
                         Text {
                             text: item.icon;
-                            font-size: Tokens.font-md;
+                            font-size: Tokens.font-lg;
                             vertical-alignment: center;
                         }
                         Text {
                             text: item.name;
                             font-family: "Inter";
                             font-size: Tokens.font-sm;
-                            font-weight: item.path == root.active-path ? 500 : 400;
+                            font-weight: item.path == root.active-path ? Tokens.font-weight-medium : Tokens.font-weight-regular;
                             color: item.path == root.active-path ? Tokens.text-primary : Tokens.text-secondary;
                             vertical-alignment: center;
                         }
@@ -272,29 +372,40 @@ component Toolbar {
     callback settings-clicked();
     callback shortcuts-clicked();
 
-    min-height: 50px;
-    max-height: 54px;
-    preferred-height: 52px;
+    min-height: 52px;
+    max-height: 60px;
+    preferred-height: 56px;
 
     Rectangle {
         background: Tokens.bg-toolbar;
 
-        // Subtle bottom shadow
+        // Bottom shadow layers
         Rectangle {
-            y: parent.height - 4px;
-            height: 4px;
-            background: #00000030;
+            y: parent.height - 6px;
+            height: 6px;
+            width: 100%;
+            background: Tokens.shadow;
+            opacity: 0.5;
+        }
+        Rectangle {
+            y: parent.height - 3px;
+            height: 3px;
+            width: 100%;
+            background: Tokens.shadow;
+            opacity: 0.3;
         }
 
+        // Border
         Rectangle {
             y: parent.height - 1px;
             height: 1px;
+            width: 100%;
             background: Tokens.border-subtle;
         }
 
         HorizontalBox {
-            padding: 10px;
-            spacing: 10px;
+            padding: 14px;
+            spacing: 12px;
 
             StyledButton {
                 text: "←";
@@ -353,19 +464,39 @@ component FileList {
     in property <[FileEntry]> files;
     in property <[int]> selected-indices: [];
 
+    // Sort and column visibility properties from MainWindow
+    in property <string> sort-by: "name";
+    in property <bool> show-column-name: true;
+    in property <bool> show-column-size: true;
+    in property <bool> show-column-modified: true;
+    in property <bool> show-column-created: true;
+    in property <bool> show-column-type: false;
+
     callback file-selected(int, bool, bool);  // index, ctrl-pressed, shift-pressed
     callback file-activated(int);
     callback sort-requested(string);
+    callback sort-menu-clicked();
+    callback column-visibility-changed(string, bool);
 
     VerticalBox {
         padding: 0;
         spacing: 0;
 
         Rectangle {
-            min-height: 40px;
-            max-height: 44px;
+            min-height: 44px;
+            max-height: 52px;
             background: Tokens.bg-header;
 
+            // Bottom shadow
+            Rectangle {
+                y: parent.height - 4px;
+                height: 4px;
+                width: 100%;
+                background: Tokens.shadow;
+                opacity: 0.3;
+            }
+
+            // Border
             Rectangle {
                 y: parent.height - 1px;
                 height: 1px;
@@ -374,30 +505,58 @@ component FileList {
             }
 
             HorizontalBox {
-                padding-left: 16px;
-                padding-right: 16px;
+                padding-left: 20px;
+                padding-right: 20px;
                 spacing: 12px;
 
+                // Menu button for sort/columns
                 TouchArea {
+                    min-width: 24px;
+                    max-width: 24px;
+                    min-height: 24px;
+                    max-height: 24px;
+                    mouse-cursor: pointer;
+                    clicked => { root.sort-menu-clicked() }
+
+                    Rectangle {
+                        background: transparent;
+                        border-radius: 4px;
+
+                        Text {
+                            text: "☰";
+                            font-size: Tokens.font-sm;
+                            color: Tokens.text-tertiary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                // Spacer between menu and columns
+                Rectangle { width: 4px; }
+
+                // Name column
+                if (root.show-column-name) : TouchArea {
                     horizontal-stretch: 3;
                     mouse-cursor: pointer;
                     clicked => { root.sort-requested("name") }
                     Rectangle {
                         background: transparent;
                         border-radius: 6px;
-                        padding: 6px;
                         Text {
                             text: "Name";
                             font-family: "Inter";
                             font-size: Tokens.font-sm;
-                            font-weight: 600;
-                            color: Tokens.text-tertiary;
+                            font-weight: Tokens.font-weight-semibold;
+                            color: root.sort-by == "name" ? Tokens.primary : Tokens.text-tertiary;
                             letter-spacing: 0.5px;
+                            vertical-alignment: center;
                         }
                     }
                 }
 
-                TouchArea {
+                // Size column
+                if (root.show-column-size) : TouchArea {
                     horizontal-stretch: 0;
                     min-width: 90px;
                     mouse-cursor: pointer;
@@ -405,19 +564,21 @@ component FileList {
                     Rectangle {
                         background: transparent;
                         border-radius: 6px;
-                        padding: 6px;
                         Text {
                             text: "Size";
                             font-family: "Inter";
                             font-size: Tokens.font-sm;
-                            font-weight: 600;
-                            color: Tokens.text-tertiary;
+                            font-weight: Tokens.font-weight-semibold;
+                            color: root.sort-by == "size" ? Tokens.primary : Tokens.text-tertiary;
                             letter-spacing: 0.5px;
+                            horizontal-alignment: right;
+                            vertical-alignment: center;
                         }
                     }
                 }
 
-                TouchArea {
+                // Modified column
+                if (root.show-column-modified) : TouchArea {
                     horizontal-stretch: 0;
                     min-width: 140px;
                     mouse-cursor: pointer;
@@ -425,14 +586,59 @@ component FileList {
                     Rectangle {
                         background: transparent;
                         border-radius: 6px;
-                        padding: 6px;
                         Text {
                             text: "Modified";
                             font-family: "Inter";
                             font-size: Tokens.font-sm;
-                            font-weight: 600;
-                            color: Tokens.text-tertiary;
+                            font-weight: Tokens.font-weight-semibold;
+                            color: root.sort-by == "modified" ? Tokens.primary : Tokens.text-tertiary;
                             letter-spacing: 0.5px;
+                            horizontal-alignment: right;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                // Created column
+                if (root.show-column-created) : TouchArea {
+                    horizontal-stretch: 0;
+                    min-width: 140px;
+                    mouse-cursor: pointer;
+                    clicked => { root.sort-requested("created") }
+                    Rectangle {
+                        background: transparent;
+                        border-radius: 6px;
+                        Text {
+                            text: "Created";
+                            font-family: "Inter";
+                            font-size: Tokens.font-sm;
+                            font-weight: Tokens.font-weight-semibold;
+                            color: root.sort-by == "created" ? Tokens.primary : Tokens.text-tertiary;
+                            letter-spacing: 0.5px;
+                            horizontal-alignment: right;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                // Type column
+                if (root.show-column-type) : TouchArea {
+                    horizontal-stretch: 0;
+                    min-width: 80px;
+                    mouse-cursor: pointer;
+                    clicked => { root.sort-requested("type") }
+                    Rectangle {
+                        background: transparent;
+                        border-radius: 6px;
+                        Text {
+                            text: "Type";
+                            font-family: "Inter";
+                            font-size: Tokens.font-sm;
+                            font-weight: Tokens.font-weight-semibold;
+                            color: root.sort-by == "type" ? Tokens.primary : Tokens.text-tertiary;
+                            letter-spacing: 0.5px;
+                            horizontal-alignment: right;
+                            vertical-alignment: center;
                         }
                     }
                 }
@@ -444,8 +650,8 @@ component FileList {
             horizontal-stretch: 1;
 
             for entry[index] in root.files : TouchArea {
-                min-height: 38px;
-                max-height: 42px;
+                min-height: 40px;
+                max-height: 48px;
                 mouse-cursor: pointer;
                 clicked => { 
                     root.file-selected(index, false, false) 
@@ -459,25 +665,47 @@ component FileList {
                     border-radius: 6px;
                 }
 
+                // Hover effect
+                Rectangle {
+                    width: 100%;
+                    height: 100%;
+                    background: Tokens.bg-hover;
+                    border-radius: 6px;
+                    opacity: 0;
+                }
+
                 HorizontalBox {
-                    padding-left: 16px;
-                    padding-right: 16px;
-                    spacing: 12px;
+                    padding-left: 20px;
+                    padding-right: 20px;
+                    spacing: 16px;
 
                     HorizontalBox {
                         horizontal-stretch: 3;
                         spacing: 12px;
-                        Text {
-                            text: entry.icon;
-                            font-size: Tokens.font-md;
-                            vertical-alignment: center;
+
+                        // Background circle for icon visibility
+                        Rectangle {
+                            min-width: 28px;
+                            max-width: 28px;
+                            min-height: 28px;
+                            max-height: 28px;
+                            background: Tokens.bg-hover;
+                            border-radius: 14px;
+
+                            Text {
+                                text: entry.icon;
+                                font-size: Tokens.font-md;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
                         }
+
                         Text {
                             text: entry.name;
                             font-family: "Inter";
                             font-size: Tokens.font-sm;
                             color: entry.selected ? Tokens.text-primary : Tokens.text-primary;
-                            font-weight: entry.selected ? 500 : 400;
+                            font-weight: entry.selected ? Tokens.font-weight-medium : Tokens.font-weight-regular;
                             overflow: elide;
                             vertical-alignment: center;
                         }
@@ -491,6 +719,7 @@ component FileList {
                         font-size: Tokens.font-sm;
                         color: entry.selected ? Tokens.text-secondary : Tokens.text-secondary;
                         vertical-alignment: center;
+                        horizontal-alignment: right;
                     }
 
                     Text {
@@ -501,6 +730,7 @@ component FileList {
                         font-size: Tokens.font-sm;
                         color: entry.selected ? Tokens.text-secondary : Tokens.text-secondary;
                         vertical-alignment: center;
+                        horizontal-alignment: right;
                     }
                 }
             }
@@ -512,37 +742,46 @@ component StatusBar {
     in property <int> item-count;
     in property <string> status-message;
 
-    min-height: 32px;
-    max-height: 36px;
-    preferred-height: 34px;
+    min-height: 36px;
+    max-height: 44px;
+    preferred-height: 40px;
 
     Rectangle {
         background: Tokens.bg-status;
 
-        // Subtle top shadow
+        // Top shadow layers
         Rectangle {
             y: 0;
             height: 4px;
             width: 100%;
-            background: #00000015;
+            background: Tokens.shadow;
+            opacity: 0.4;
+        }
+        Rectangle {
+            y: 3px;
+            height: 2px;
+            width: 100%;
+            background: Tokens.shadow;
+            opacity: 0.2;
         }
 
+        // Border
         Rectangle {
-            y: 4px;
+            y: 5px;
             height: 1px;
             width: 100%;
             background: Tokens.border-subtle;
         }
 
         HorizontalBox {
-            padding-left: 20px;
-            padding-right: 20px;
+            padding-left: 24px;
+            padding-right: 24px;
 
             Text {
                 text: "\{root.item-count} items";
                 font-family: "Inter";
                 font-size: Tokens.font-xs;
-                font-weight: 500;
+                font-weight: Tokens.font-weight-medium;
                 color: Tokens.text-secondary;
             }
 
@@ -554,6 +793,300 @@ component StatusBar {
                 font-size: Tokens.font-xs;
                 color: Tokens.text-tertiary;
                 horizontal-alignment: right;
+            }
+        }
+    }
+}
+
+component DetailsPanel {
+    in property <bool> show: true;
+    in property <length> panel-width: 280px;
+    in property <string> file-name: "";
+    in property <string> file-path: "";
+    in property <string> file-size: "";
+    in property <string> file-modified: "";
+    in property <string> file-created: "";
+    in property <string> file-mime: "";
+    in property <bool> file-is-dir: false;
+    callback toggle();
+
+    Rectangle {
+        width: root.panel-width;
+        background: Tokens.bg-surface;
+
+        // Left shadow effect
+        Rectangle {
+            x: 0;
+            y: 0;
+            width: 8px;
+            height: parent.height;
+            background: Tokens.shadow;
+            opacity: 0.6;
+        }
+
+        // Left shadow layer 2
+        Rectangle {
+            x: 4px;
+            y: 0;
+            width: 4px;
+            height: parent.height;
+            background: Tokens.shadow;
+            opacity: 0.4;
+        }
+
+        // Border
+        Rectangle {
+            x: 8px;
+            y: 0;
+            width: 1px;
+            height: parent.height;
+            background: Tokens.border-subtle;
+        }
+
+        VerticalBox {
+            padding: 16px;
+            spacing: 16px;
+
+            // Header with toggle
+            HorizontalBox {
+                spacing: 8px;
+
+                Text {
+                    text: "DETAILS";
+                    font-family: "Inter";
+                    font-size: Tokens.font-xs;
+                    font-weight: Tokens.font-weight-semibold;
+                    color: Tokens.text-tertiary;
+                    letter-spacing: 1px;
+                    vertical-alignment: center;
+                }
+
+                Rectangle { horizontal-stretch: 1; }
+
+                TouchArea {
+                    min-width: 28px;
+                    max-width: 28px;
+                    min-height: 28px;
+                    max-height: 28px;
+                    mouse-cursor: pointer;
+                    clicked => { root.toggle() }
+
+                    Rectangle {
+                        background: Tokens.bg-hover;
+                        border-radius: 6px;
+
+                        Text {
+                            text: "×";
+                            font-size: Tokens.font-lg;
+                            color: Tokens.text-secondary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+
+            // Divider
+            Rectangle {
+                height: 1px;
+                background: Tokens.border-subtle;
+            }
+
+            // File icon with background circle
+            if (root.file-name != "") : VerticalBox {
+                alignment: center;
+                min-height: 80px;
+
+                // Background circle for icon
+                Rectangle {
+                    width: 64px;
+                    height: 64px;
+                    background: Tokens.bg-hover;
+                    border-radius: 32px;
+
+                    Text {
+                        text: root.file-is-dir ? "📁" : "📄";
+                        font-size: 32px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            // File name
+            if (root.file-name != "") : Text {
+                text: root.file-name;
+                font-family: "Inter";
+                font-size: Tokens.font-md;
+                font-weight: Tokens.font-weight-medium;
+                color: Tokens.text-primary;
+                horizontal-alignment: center;
+                wrap: word-wrap;
+            }
+
+            // PDF preview placeholder (when PDF selected)
+            if (root.file-mime == "application/pdf" && root.file-name != "") : Rectangle {
+                min-height: 120px;
+                max-height: 140px;
+                background: Tokens.bg-row-alt;
+                border-radius: 8px;
+
+                VerticalBox {
+                    spacing: 8px;
+
+                    Text {
+                        text: "PDF Preview";
+                        font-family: "Inter";
+                        font-size: Tokens.font-xs;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-tertiary;
+                        horizontal-alignment: center;
+                    }
+
+                    // Placeholder area
+                    Rectangle {
+                        min-height: 80px;
+                        background: Tokens.bg-surface;
+                        border-radius: 4px;
+
+                        Text {
+                            text: "[PDF viewer]\n\nComing soon...";
+                            font-family: "Inter";
+                            font-size: Tokens.font-xs;
+                            color: Tokens.text-tertiary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+
+            // File details
+            if (root.file-name != "" && root.file-path != "") : VerticalBox {
+                spacing: 12px;
+
+                // Path
+                VerticalBox {
+                    spacing: 4px;
+
+                    Text {
+                        text: "Path";
+                        font-family: "Inter";
+                        font-size: Tokens.font-xs;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-tertiary;
+                    }
+
+                    Text {
+                        text: root.file-path;
+                        font-family: "Inter";
+                        font-size: Tokens.font-xs;
+                        color: Tokens.text-secondary;
+                        wrap: word-wrap;
+                    }
+                }
+
+                // Size
+                if (root.file-size != "") : VerticalBox {
+                    spacing: 4px;
+
+                    Text {
+                        text: "Size";
+                        font-family: "Inter";
+                        font-size: Tokens.font-xs;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-tertiary;
+                    }
+
+                    Text {
+                        text: root.file-size;
+                        font-family: "Inter";
+                        font-size: Tokens.font-sm;
+                        color: Tokens.text-primary;
+                    }
+                }
+
+                // Modified
+                if (root.file-modified != "") : VerticalBox {
+                    spacing: 4px;
+
+                    Text {
+                        text: "Modified";
+                        font-family: "Inter";
+                        font-size: Tokens.font-xs;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-tertiary;
+                    }
+
+                    Text {
+                        text: root.file-modified;
+                        font-family: "Inter";
+                        font-size: Tokens.font-sm;
+                        color: Tokens.text-primary;
+                    }
+                }
+
+                // Created
+                if (root.file-created != "") : VerticalBox {
+                    spacing: 4px;
+
+                    Text {
+                        text: "Created";
+                        font-family: "Inter";
+                        font-size: Tokens.font-xs;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-tertiary;
+                    }
+
+                    Text {
+                        text: root.file-created;
+                        font-family: "Inter";
+                        font-size: Tokens.font-sm;
+                        color: Tokens.text-primary;
+                    }
+                }
+
+                // Type/MIME
+                if (root.file-mime != "") : VerticalBox {
+                    spacing: 4px;
+
+                    Text {
+                        text: "Type";
+                        font-family: "Inter";
+                        font-size: Tokens.font-xs;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-tertiary;
+                    }
+
+                    Text {
+                        text: root.file-mime;
+                        font-family: "Inter";
+                        font-size: Tokens.font-sm;
+                        color: Tokens.text-primary;
+                    }
+                }
+            }
+
+            // Empty state
+            if (root.file-name == "") : VerticalBox {
+                spacing: 12px;
+                padding-top: 40px;
+
+                Text {
+                    text: "Select a file";
+                    font-family: "Inter";
+                    font-size: Tokens.font-sm;
+                    color: Tokens.text-tertiary;
+                    horizontal-alignment: center;
+                }
+
+                Text {
+                    text: "to view details";
+                    font-family: "Inter";
+                    font-size: Tokens.font-xs;
+                    color: Tokens.text-tertiary;
+                    horizontal-alignment: center;
+                }
             }
         }
     }
@@ -577,6 +1110,25 @@ export component MainWindow inherits Window {
     in property <string> search-text: "";
     in property <string> status-message: "";
 
+    // Details panel
+    in property <bool> show-details-panel: false;
+    in property <length> details-panel-width: 280px;
+    in property <string> selected-file-path: "";
+    in property <string> selected-file-name: "";
+    in property <string> selected-file-size: "";
+    in property <string> selected-file-modified: "";
+    in property <string> selected-file-created: "";
+    in property <string> selected-file-mime: "";
+    in property <bool> selected-file-is-dir: false;
+
+    // Sort and column visibility
+    in property <string> sort-by: "name";
+    in property <bool> show-column-name: true;
+    in property <bool> show-column-size: true;
+    in property <bool> show-column-modified: true;
+    in property <bool> show-column-created: true;
+    in property <bool> show-column-type: false;
+
     callback go-back();
     callback go-forward();
     callback go-up();
@@ -586,6 +1138,9 @@ export component MainWindow inherits Window {
     callback file-selected(int, bool, bool);
     callback file-activated(int);
     callback sort-requested(string);
+    callback sort-menu-clicked();
+    callback column-visibility-changed(string, bool);
+    callback details-panel-toggle();
     callback settings-clicked();
     callback shortcuts-clicked();
 
@@ -623,11 +1178,39 @@ export component MainWindow inherits Window {
             FileList {
                 files: root.files;
                 selected-indices: root.selected-indices;
+                sort-by: root.sort-by;
+                show-column-name: root.show-column-name;
+                show-column-size: root.show-column-size;
+                show-column-modified: root.show-column-modified;
+                show-column-created: root.show-column-created;
+                show-column-type: root.show-column-type;
                 horizontal-stretch: 1;
                 vertical-stretch: 1;
                 file-selected(i, ctrl, shift) => { root.file-selected(i, ctrl, shift) }
                 file-activated(i) => { root.file-activated(i) }
                 sort-requested(col) => { root.sort-requested(col) }
+                sort-menu-clicked => { root.sort-menu-clicked() }
+                column-visibility-changed(col, vis) => { root.column-visibility-changed(col, vis) }
+            }
+
+            // Vertical separator between FileList and DetailsPanel
+            if (root.show-details-panel) : Rectangle {
+                width: 1px;
+                background: Tokens.border;
+            }
+
+            // Details panel on the right
+            if (root.show-details-panel) : DetailsPanel {
+                show: root.show-details-panel;
+                panel-width: root.details-panel-width;
+                file-name: root.selected-file-name;
+                file-path: root.selected-file-path;
+                file-size: root.selected-file-size;
+                file-modified: root.selected-file-modified;
+                file-created: root.selected-file-created;
+                file-mime: root.selected-file-mime;
+                file-is-dir: root.selected-file-is-dir;
+                toggle => { root.details-panel-toggle() }
             }
         }
 
@@ -652,14 +1235,14 @@ export component SetupDialog inherits Dialog {
     callback setup-complete();
 
     VerticalBox {
-        padding: 28px;
-        spacing: 24px;
+        padding: 32px;
+        spacing: 28px;
 
         Text {
             text: "Welcome to felix";
             font-family: "Inter";
-            font-size: 20px;
-            font-weight: 600;
+            font-size: Tokens.font-xl;
+            font-weight: Tokens.font-weight-bold;
             color: Tokens.text-primary;
         }
 
@@ -671,7 +1254,7 @@ export component SetupDialog inherits Dialog {
         }
 
         VerticalBox {
-            spacing: 14px;
+            spacing: 16px;
 
             HorizontalBox {
                 spacing: 14px;
@@ -739,14 +1322,14 @@ export component SettingsDialog inherits Dialog {
     callback close-dialog();
 
     VerticalBox {
-        padding: 24px;
-        spacing: 16px;
+        padding: 32px;
+        spacing: 20px;
 
         Text {
             text: "Settings";
             font-family: "Inter";
-            font-size: 20px;
-            font-weight: 600;
+            font-size: Tokens.font-xl;
+            font-weight: Tokens.font-weight-bold;
             color: Tokens.text-primary;
         }
 
@@ -756,35 +1339,41 @@ export component SettingsDialog inherits Dialog {
 
             VerticalBox {
                 padding: 4px;
-                spacing: 20px;
+                spacing: 28px;
 
                 // ─── General ──────────────────────────────────────
                 VerticalBox {
-                    spacing: 12px;
+                    spacing: 16px;
+
+                    // Section header with gold underline
+                    Rectangle {
+                        height: 2px;
+                        background: Tokens.primary;
+                        max-width: 60px;
+                    }
 
                     Text {
                         text: "General";
                         font-family: "Inter";
-                        font-size: Tokens.font-md;
-                        font-weight: 600;
-                        color: Tokens.primary;
-                        letter-spacing: 0.5px;
+                        font-size: Tokens.font-lg;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-primary;
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         CheckBox { checked: root.show-hidden; toggled => { root.show-hidden = self.checked } }
                         Text { text: "Show hidden files"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; }
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         CheckBox { checked: root.confirm-delete; toggled => { root.confirm-delete = self.checked } }
                         Text { text: "Confirm before deleting"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; }
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         Text { text: "Page size:"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; min-width: 100px; }
                         SpinBox {
                             value: root.page-size;
@@ -798,19 +1387,25 @@ export component SettingsDialog inherits Dialog {
 
                 // ─── Theme ────────────────────────────────────────
                 VerticalBox {
-                    spacing: 12px;
+                    spacing: 16px;
+
+                    // Section header with gold underline
+                    Rectangle {
+                        height: 2px;
+                        background: Tokens.primary;
+                        max-width: 60px;
+                    }
 
                     Text {
                         text: "Theme";
                         font-family: "Inter";
-                        font-size: Tokens.font-md;
-                        font-weight: 600;
-                        color: Tokens.primary;
-                        letter-spacing: 0.5px;
+                        font-size: Tokens.font-lg;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-primary;
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         Text { text: "Theme:"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; min-width: 100px; }
                         ComboBox {
                             model: ["System", "Light", "Dark"];
@@ -819,7 +1414,7 @@ export component SettingsDialog inherits Dialog {
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         Text { text: "Accent color:"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; min-width: 100px; }
                         LineEdit {
                             text: root.accent-color;
@@ -832,37 +1427,43 @@ export component SettingsDialog inherits Dialog {
 
                 // ─── Document Tools ───────────────────────────────
                 VerticalBox {
-                    spacing: 12px;
+                    spacing: 16px;
+
+                    // Section header with gold underline
+                    Rectangle {
+                        height: 2px;
+                        background: Tokens.primary;
+                        max-width: 60px;
+                    }
 
                     Text {
                         text: "Document Tools";
                         font-family: "Inter";
-                        font-size: Tokens.font-md;
-                        font-weight: 600;
-                        color: Tokens.primary;
-                        letter-spacing: 0.5px;
+                        font-size: Tokens.font-lg;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-primary;
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         CheckBox { checked: root.markdown-preview; toggled => { root.markdown-preview = self.checked } }
                         Text { text: "Markdown preview"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; }
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         CheckBox { checked: root.pdf-preview; toggled => { root.pdf-preview = self.checked } }
                         Text { text: "PDF preview"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; }
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         CheckBox { checked: root.docx-preview; toggled => { root.docx-preview = self.checked } }
                         Text { text: "DOCX preview"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; }
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         CheckBox { checked: root.pptx-preview; toggled => { root.pptx-preview = self.checked } }
                         Text { text: "PPTX preview"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; }
                     }
@@ -870,25 +1471,31 @@ export component SettingsDialog inherits Dialog {
 
                 // ─── Sidebar ──────────────────────────────────────
                 VerticalBox {
-                    spacing: 12px;
+                    spacing: 16px;
+
+                    // Section header with gold underline
+                    Rectangle {
+                        height: 2px;
+                        background: Tokens.primary;
+                        max-width: 60px;
+                    }
 
                     Text {
                         text: "Sidebar";
                         font-family: "Inter";
-                        font-size: Tokens.font-md;
-                        font-weight: 600;
-                        color: Tokens.primary;
-                        letter-spacing: 0.5px;
+                        font-size: Tokens.font-lg;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-primary;
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         CheckBox { checked: root.show-devices; toggled => { root.show-devices = self.checked } }
                         Text { text: "Show devices"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; }
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         CheckBox { checked: root.show-bookmarks; toggled => { root.show-bookmarks = self.checked } }
                         Text { text: "Show bookmarks"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; }
                     }
@@ -896,19 +1503,25 @@ export component SettingsDialog inherits Dialog {
 
                 // ─── External Viewers ─────────────────────────────
                 VerticalBox {
-                    spacing: 12px;
+                    spacing: 16px;
+
+                    // Section header with gold underline
+                    Rectangle {
+                        height: 2px;
+                        background: Tokens.primary;
+                        max-width: 60px;
+                    }
 
                     Text {
                         text: "External Viewers";
                         font-family: "Inter";
-                        font-size: Tokens.font-md;
-                        font-weight: 600;
-                        color: Tokens.primary;
-                        letter-spacing: 0.5px;
+                        font-size: Tokens.font-lg;
+                        font-weight: Tokens.font-weight-semibold;
+                        color: Tokens.text-primary;
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         Text { text: "Images:"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; min-width: 100px; }
                         LineEdit {
                             text: root.image-viewer;
@@ -919,7 +1532,7 @@ export component SettingsDialog inherits Dialog {
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         Text { text: "Video:"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; min-width: 100px; }
                         LineEdit {
                             text: root.video-viewer;
@@ -930,7 +1543,7 @@ export component SettingsDialog inherits Dialog {
                     }
 
                     HorizontalBox {
-                        spacing: 12px;
+                        spacing: 14px;
                         Text { text: "PDF:"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; min-width: 100px; }
                         LineEdit {
                             text: root.pdf-viewer;
@@ -971,14 +1584,14 @@ export component ShortcutsDialog inherits Dialog {
     callback close();
 
     VerticalBox {
-        padding: 24px;
-        spacing: 20px;
+        padding: 32px;
+        spacing: 24px;
 
         Text {
             text: "Keyboard Shortcuts";
             font-family: "Inter";
-            font-size: 20px;
-            font-weight: 600;
+            font-size: Tokens.font-xl;
+            font-weight: Tokens.font-weight-bold;
             color: Tokens.text-primary;
         }
 
@@ -987,18 +1600,36 @@ export component ShortcutsDialog inherits Dialog {
             text: "Navigation";
             font-family: "Inter";
             font-size: Tokens.font-md;
-            font-weight: 600;
-            color: Tokens.primary;
+            font-weight: Tokens.font-weight-semibold;
+            color: Tokens.text-primary;
         }
 
         VerticalBox {
-            spacing: 6px;
-            HorizontalBox { Text { text: "Enter"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Open file or folder"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "Backspace"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Go to parent directory"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "h"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Go back in history"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "l"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Go forward in history"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "j"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Select next file"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "k"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Select previous file"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            spacing: 8px;
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Enter"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; vertical-alignment: center; } }
+                Text { text: "Open file or folder"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Backspace"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; vertical-alignment: center; } }
+                Text { text: "Go to parent directory"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "h"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; vertical-alignment: center; } }
+                Text { text: "Go back in history"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "l"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Go forward in history"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "j"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Select next file"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "k"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Select previous file"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
         }
 
         // Selection
@@ -1006,17 +1637,32 @@ export component ShortcutsDialog inherits Dialog {
             text: "Selection";
             font-family: "Inter";
             font-size: Tokens.font-md;
-            font-weight: 600;
-            color: Tokens.primary;
+            font-weight: Tokens.font-weight-semibold;
+            color: Tokens.text-primary;
         }
 
         VerticalBox {
-            spacing: 6px;
-            HorizontalBox { Text { text: "Click"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Select single file"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "Ctrl+Click"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Toggle selection"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "Shift+Click"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Select range"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "Ctrl+Shift+Click"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Extend range"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "Ctrl+A"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Select all"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            spacing: 8px;
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Click"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Select single file"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Ctrl+Click"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Toggle selection"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Shift+Click"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Select range"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Ctrl+Shift+Click"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Extend range"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Ctrl+A"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Select all"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
         }
 
         // File Operations
@@ -1024,17 +1670,32 @@ export component ShortcutsDialog inherits Dialog {
             text: "File Operations";
             font-family: "Inter";
             font-size: Tokens.font-md;
-            font-weight: 600;
-            color: Tokens.primary;
+            font-weight: Tokens.font-weight-semibold;
+            color: Tokens.text-primary;
         }
 
         VerticalBox {
-            spacing: 6px;
-            HorizontalBox { Text { text: "Delete"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Delete selected"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "F2"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Rename selected"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "Ctrl+C"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Copy selected"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "Ctrl+X"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Cut selected"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "Ctrl+V"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Paste"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            spacing: 8px;
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Delete"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Delete selected"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "F2"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Rename selected"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Ctrl+C"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Copy selected"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Ctrl+X"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Cut selected"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Ctrl+V"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Paste"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
         }
 
         // Other
@@ -1042,16 +1703,28 @@ export component ShortcutsDialog inherits Dialog {
             text: "Other";
             font-family: "Inter";
             font-size: Tokens.font-md;
-            font-weight: 600;
-            color: Tokens.primary;
+            font-weight: Tokens.font-weight-semibold;
+            color: Tokens.text-primary;
         }
 
         VerticalBox {
-            spacing: 6px;
-            HorizontalBox { Text { text: "Ctrl+F"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Focus search"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "Ctrl+,"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Open settings"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "?"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Show shortcuts"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
-            HorizontalBox { Text { text: "F5"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-secondary; } Text { text: "Refresh"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: right; horizontal-stretch: 1; } }
+            spacing: 8px;
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Ctrl+F"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Focus search"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "Ctrl+,"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Open settings"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "?"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Show shortcuts"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
+            HorizontalBox { 
+                Rectangle { min-width: 100px; max-width: 100px; background: Tokens.bg-surface; border-radius: 4px; Text { text: "F5"; font-family: "Inter"; font-size: Tokens.font-xs; color: Tokens.text-secondary; horizontal-alignment: center; } }
+                Text { text: "Refresh"; font-family: "Inter"; font-size: Tokens.font-sm; color: Tokens.text-primary; horizontal-alignment: left; horizontal-stretch: 1; } 
+            }
         }
 
         Rectangle { vertical-stretch: 1; }

@@ -91,8 +91,8 @@ pub struct ViewerConfig {
     pub pdf_viewer: String,
 }
 
-fn default_image_viewer() -> String { "imv".to_string() }
-fn default_video_viewer() -> String { "mpv".to_string() }
+fn default_image_viewer() -> String { "zathura".to_string() }
+fn default_video_viewer() -> String { "zathura".to_string() }
 fn default_pdf_viewer() -> String { "zathura".to_string() }
 
 impl Default for ViewerConfig {

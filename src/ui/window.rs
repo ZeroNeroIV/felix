@@ -1,5 +1,3 @@
-//! UI module — Slint-based macOS Finder-style interface
-
 slint::include_modules!();
 
 use crate::fs::browser::{self, SortField, SortDirection};
@@ -135,6 +133,34 @@ fn default_sidebar_items() -> Vec<SidebarItem> {
 pub fn launch() -> Result<(), slint::PlatformError> {
     let window = MainWindow::new()?;
 
+    let initial_cfg = config::load().unwrap_or_else(|_| {
+        config::Config {
+            general: config::GeneralConfig {
+                show_hidden: false,
+                confirm_delete: true,
+                page_size: 100,
+            },
+            theme: config::ThemeConfig {
+                mode: config::ThemeMode::System,
+                accent_color: "#58a6ff".to_string(),
+            },
+            tools: config::ToolsConfig {
+                enabled: vec!["markdown".to_string(), "pdf".to_string()],
+                markdown_preview: true,
+                pdf_preview: true,
+                docx_preview: false,
+                pptx_preview: false,
+            },
+            sidebar: config::SidebarConfig {
+                favorites: Vec::new(),
+                show_devices: true,
+                show_bookmarks: true,
+            },
+            ui: config::UiConfig::default(),
+            viewers: config::ViewerConfig::default(),
+        }
+    });
+
     // Navigation state
     let nav = Rc::new(RefCell::new(NavState::new(browser::home_dir())));
     let files_cache: Rc<RefCell<Vec<browser::FileEntry>>> = Rc::new(RefCell::new(Vec::new()));
@@ -149,9 +175,12 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     let anchor_index: Rc<RefCell<Option<usize>>> = 
         Rc::new(RefCell::new(None));
 
+    // Current config (shared, mutable)
+    let current_cfg: Rc<RefCell<config::Config>> = Rc::new(RefCell::new(initial_cfg));
+
     // Initial load
     let initial_path = browser::home_dir();
-    load_directory(&window, &nav, &files_cache, &selected_indices, &anchor_index, &initial_path);
+    load_directory(&window, &nav, &files_cache, &selected_indices, &anchor_index, &initial_path, &current_cfg);
 
     // Set sidebar items
     let sidebar: slint::ModelRc<SidebarItem> =
@@ -165,13 +194,14 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     let files_ref = files_cache.clone();
     let sel_back = selected_indices.clone();
     let anc_back = anchor_index.clone();
+    let cfg_back = current_cfg.clone();
     window.on_go_back(move || {
         let window = w.unwrap();
         let mut nav = nav_ref.borrow_mut();
         if let Some(path) = nav.go_back() {
             let path = path.clone();
             drop(nav);
-            load_directory(&window, &nav_ref, &files_ref, &sel_back, &anc_back, &path);
+            load_directory(&window, &nav_ref, &files_ref, &sel_back, &anc_back, &path, &cfg_back);
         }
     });
 
@@ -180,13 +210,14 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     let files_ref = files_cache.clone();
     let sel_fwd = selected_indices.clone();
     let anc_fwd = anchor_index.clone();
+    let cfg_fwd = current_cfg.clone();
     window.on_go_forward(move || {
         let window = w.unwrap();
         let mut nav = nav_ref.borrow_mut();
         if let Some(path) = nav.go_forward() {
             let path = path.clone();
             drop(nav);
-            load_directory(&window, &nav_ref, &files_ref, &sel_fwd, &anc_fwd, &path);
+            load_directory(&window, &nav_ref, &files_ref, &sel_fwd, &anc_fwd, &path, &cfg_fwd);
         }
     });
 
@@ -195,11 +226,12 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     let files_ref = files_cache.clone();
     let sel_up = selected_indices.clone();
     let anc_up = anchor_index.clone();
+    let cfg_up = current_cfg.clone();
     window.on_go_up(move || {
         let window = w.unwrap();
         let current = nav_ref.borrow().current().clone();
         if let Some(parent) = browser::parent_dir(&current) {
-            load_directory(&window, &nav_ref, &files_ref, &sel_up, &anc_up, &parent);
+            load_directory(&window, &nav_ref, &files_ref, &sel_up, &anc_up, &parent, &cfg_up);
         }
     });
 
@@ -208,11 +240,12 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     let files_ref = files_cache.clone();
     let sel_path = selected_indices.clone();
     let anc_path = anchor_index.clone();
+    let cfg_path = current_cfg.clone();
     window.on_path_entered(move |path_str| {
         let window = w.unwrap();
         let path = PathBuf::from(path_str.to_string());
         if path.is_dir() {
-            load_directory(&window, &nav_ref, &files_ref, &sel_path, &anc_path, &path);
+            load_directory(&window, &nav_ref, &files_ref, &sel_path, &anc_path, &path, &cfg_path);
         }
     });
 
@@ -221,10 +254,11 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     let files_ref = files_cache.clone();
     let sel_side = selected_indices.clone();
     let anc_side = anchor_index.clone();
+    let cfg_side = current_cfg.clone();
     window.on_sidebar_item_clicked(move |path_str| {
         let window = w.unwrap();
         let path = PathBuf::from(path_str.to_string());
-        load_directory(&window, &nav_ref, &files_ref, &sel_side, &anc_side, &path);
+        load_directory(&window, &nav_ref, &files_ref, &sel_side, &anc_side, &path, &cfg_side);
     });
 
     let w = window.as_weak();
@@ -232,6 +266,7 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     let files_ref = files_cache.clone();
     let sel_act = selected_indices.clone();
     let anc_act = anchor_index.clone();
+    let cfg_act = current_cfg.clone();
     window.on_file_activated(move |index| {
         let window = w.unwrap();
         let files = files_ref.borrow();
@@ -241,7 +276,10 @@ pub fn launch() -> Result<(), slint::PlatformError> {
                 drop(files);
                 let nav_ref2 = nav_for_activated.clone();
                 let files_ref2 = files_ref.clone();
-                load_directory(&window, &nav_ref2, &files_ref2, &sel_act, &anc_act, &path);
+                let sel_act2 = sel_act.clone();
+                let anc_act2 = anc_act.clone();
+                let cfg_ref2 = cfg_act.clone();
+                load_directory(&window, &nav_ref2, &files_ref2, &sel_act2, &anc_act2, &path, &cfg_ref2);
             } else {
                 let path = entry.path.clone();
                 drop(files);
@@ -288,11 +326,6 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         );
     });
 
-/// Update file selection based on click behavior (Windows-style)
-/// - Plain click: single selection
-/// - Ctrl+click: toggle selection
-/// - Shift+click: range selection from anchor
-/// - Ctrl+Shift+click: extend range from anchor
 fn update_selection(
     window: &MainWindow,
     clicked_index: usize,
@@ -355,11 +388,58 @@ fn update_selection(
         Rc::new(slint::VecModel::from(selected_vec)).into()
     );
     
-    // Update status bar
     let count = indices.len();
     window.set_status_message(
         format!("{} selected", count).into()
     );
+    
+    if let Some(first_selected) = indices.iter().min() {
+        if let Some(entry) = files.get(*first_selected) {
+            window.set_selected_file_path(entry.path.to_string_lossy().to_string().into());
+            window.set_selected_file_name(entry.name.clone().into());
+            window.set_selected_file_size(entry.size_display().into());
+            window.set_selected_file_modified(entry.modified_display().into());
+            window.set_selected_file_created("--".into());
+            
+            let mime = if entry.is_dir {
+                "directory".to_string()
+            } else {
+                entry.path.extension()
+                    .and_then(|e| e.to_str())
+                    .map(|e| match e {
+                        "pdf" => "application/pdf",
+                        "md" | "markdown" => "text/markdown",
+                        "txt" => "text/plain",
+                        "jpg" | "jpeg" => "image/jpeg",
+                        "png" => "image/png",
+                        "gif" => "image/gif",
+                        "svg" => "image/svg+xml",
+                        "mp4" => "video/mp4",
+                        "mkv" => "video/x-matroska",
+                        "mp3" => "audio/mpeg",
+                        "wav" => "audio/wav",
+                        "zip" => "application/zip",
+                        "tar" => "application/x-tar",
+                        "gz" => "application/gzip",
+                        "rs" => "text/x-rust",
+                        "py" => "text/x-python",
+                        "js" => "text/javascript",
+                        "ts" => "text/typescript",
+                        "json" => "application/json",
+                        "yaml" | "yml" => "application/x-yaml",
+                        "toml" => "application/toml",
+                        _ => "application/octet-stream",
+                    })
+                    .unwrap_or("application/octet-stream")
+                    .to_string()
+            };
+            window.set_selected_file_mime(mime.into());
+            window.set_selected_file_is_dir(entry.is_dir);
+            window.set_show_details_panel(true);
+        }
+    } else {
+        window.set_show_details_panel(false);
+    }
 }
 
     let w = window.as_weak();
@@ -520,6 +600,11 @@ fn update_selection(
                         // Save callback
                         let w2: slint::Weak<MainWindow> = window.as_weak();
                         let dialog_weak = dialog.as_weak();
+                        let cfg_ref = current_cfg.clone();
+                        let nav_ref = nav.clone();
+                        let files_ref = files_cache.clone();
+                        let sel_ref = selected_indices.clone();
+                        let anc_ref = anchor_index.clone();
                         dialog.on_save_config(move || {
                             let dialog = dialog_weak.upgrade().unwrap();
                             let new_cfg = config::Config {
@@ -551,11 +636,11 @@ fn update_selection(
                                     pptx_preview: dialog.get_pptx_preview(),
                                 },
                                 sidebar: config::SidebarConfig {
-                                    favorites: cfg.sidebar.favorites.clone(),
+                                    favorites: cfg_ref.borrow().sidebar.favorites.clone(),
                                     show_devices: dialog.get_show_devices(),
                                     show_bookmarks: dialog.get_show_bookmarks(),
                                 },
-                                ui: cfg.ui.clone(),
+                                ui: cfg_ref.borrow().ui.clone(),
                                 viewers: config::ViewerConfig {
                                     image_viewer: dialog.get_image_viewer().to_string(),
                                     video_viewer: dialog.get_video_viewer().to_string(),
@@ -569,10 +654,39 @@ fn update_selection(
                                     w.set_status_message(format!("Error saving config: {}", e).into());
                                 }
                             } else {
-                                log::info!("Config saved successfully");
+                                *cfg_ref.borrow_mut() = new_cfg.clone();
+                                
+                                let current_path = nav_ref.borrow().current().clone();
+                                load_directory(
+                                    &w2.upgrade().unwrap(),
+                                    &nav_ref,
+                                    &files_ref,
+                                    &sel_ref,
+                                    &anc_ref,
+                                    &current_path,
+                                    &cfg_ref,
+                                );
+                                
+                                let show_devices = new_cfg.sidebar.show_devices;
+                                let show_bookmarks = new_cfg.sidebar.show_bookmarks;
+                                let mut items = default_sidebar_items();
+                                items.retain(|item| {
+                                    if item.section == "devices" && !show_devices {
+                                        return false;
+                                    }
+                                    if item.section == "bookmarks" && !show_bookmarks {
+                                        return false;
+                                    }
+                                    true
+                                });
+                                let sidebar: slint::ModelRc<SidebarItem> =
+                                    Rc::new(slint::VecModel::from(items)).into();
                                 if let Some(w) = w2.upgrade() {
+                                    w.set_sidebar_items(sidebar);
                                     w.set_status_message("Settings saved!".into());
                                 }
+                                
+                                let _ = dialog.hide();
                             }
                         });
 
@@ -608,8 +722,10 @@ fn load_directory(
     selected_indices: &Rc<RefCell<HashSet<usize>>>,
     anchor_index: &Rc<RefCell<Option<usize>>>,
     path: &Path,
+    config: &Rc<RefCell<config::Config>>,
 ) {
-    match browser::list_directory(path) {
+    let show_hidden = config.borrow().general.show_hidden;
+    match browser::list_directory(path, show_hidden) {
         Ok(entries) => {
             // Update navigation
             nav.borrow_mut().navigate(path.to_path_buf());

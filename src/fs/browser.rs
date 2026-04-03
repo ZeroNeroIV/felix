@@ -96,7 +96,7 @@ impl FileEntry {
 }
 
 /// List directory contents, returning sorted entries (dirs first, then files, alphabetical)
-pub fn list_directory(path: &Path) -> Result<Vec<FileEntry>, std::io::Error> {
+pub fn list_directory(path: &Path, show_hidden: bool) -> Result<Vec<FileEntry>, std::io::Error> {
     let mut entries = Vec::new();
 
     if !path.is_dir() {
@@ -110,8 +110,7 @@ pub fn list_directory(path: &Path) -> Result<Vec<FileEntry>, std::io::Error> {
         let entry = entry?;
         let name = entry.file_name().to_string_lossy().to_string();
 
-        // Skip hidden files starting with '.'
-        if name.starts_with('.') {
+        if !show_hidden && name.starts_with('.') {
             continue;
         }
 

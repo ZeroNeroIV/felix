@@ -1,6 +1,6 @@
 [package]
 name = "felix"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "A lightweight, fast file manager with built-in document tools"
 license = "MIT"
@@ -32,6 +32,8 @@ zip = "0.6"
 tar = "0.4"
 flate2 = "1"
 sevenz-rust = "0.6"
+lopdf = "0.34"
+image = "0.25"
 
 [dev-dependencies]
 tempfile = "3"
