@@ -290,6 +290,176 @@ fn apply_theme_colors(window: &MainWindow, theme_colors: &config::ThemeColors) {
     }
 }
 
+fn apply_theme_file(window: &MainWindow, theme: &config::Theme) {
+    let tokens = Tokens::get(window);
+    
+    let light = &theme.light;
+    let dark = &theme.dark;
+    
+    if let Some(color) = &light.bg_window {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_window(c); }
+    }
+    if let Some(color) = &dark.bg_window {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_window(c); }
+    }
+    if let Some(color) = &light.bg_surface {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_surface(c); }
+    }
+    if let Some(color) = &dark.bg_surface {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_surface(c); }
+    }
+    if let Some(color) = &light.bg_sidebar {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_sidebar(c); }
+    }
+    if let Some(color) = &dark.bg_sidebar {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_sidebar(c); }
+    }
+    if let Some(color) = &light.bg_toolbar {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_toolbar(c); }
+    }
+    if let Some(color) = &dark.bg_toolbar {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_toolbar(c); }
+    }
+    if let Some(color) = &light.bg_header {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_header(c); }
+    }
+    if let Some(color) = &dark.bg_header {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_header(c); }
+    }
+    if let Some(color) = &light.bg_status {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_status(c); }
+    }
+    if let Some(color) = &dark.bg_status {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_status(c); }
+    }
+    if let Some(color) = &light.bg_row_alt {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_row_alt(c); }
+    }
+    if let Some(color) = &dark.bg_row_alt {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_row_alt(c); }
+    }
+    if let Some(color) = &light.bg_hover {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_hover(c); }
+    }
+    if let Some(color) = &dark.bg_hover {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_hover(c); }
+    }
+    if let Some(color) = &light.bg_selected {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_selected(c); }
+    }
+    if let Some(color) = &dark.bg_selected {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_selected(c); }
+    }
+    if let Some(color) = &light.bg_input {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_input(c); }
+    }
+    if let Some(color) = &dark.bg_input {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_input(c); }
+    }
+    if let Some(color) = &light.text_primary {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_text_primary(c); }
+    }
+    if let Some(color) = &dark.text_primary {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_text_primary(c); }
+    }
+    if let Some(color) = &light.text_secondary {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_text_secondary(c); }
+    }
+    if let Some(color) = &dark.text_secondary {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_text_secondary(c); }
+    }
+    if let Some(color) = &light.text_tertiary {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_text_tertiary(c); }
+    }
+    if let Some(color) = &dark.text_tertiary {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_text_tertiary(c); }
+    }
+    if let Some(color) = &light.text_on_primary {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_text_on_primary(c); }
+    }
+    if let Some(color) = &dark.text_on_primary {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_text_on_primary(c); }
+    }
+    if let Some(color) = &light.border {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_border(c); }
+    }
+    if let Some(color) = &dark.border {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_border(c); }
+    }
+    if let Some(color) = &light.border_subtle {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_border_subtle(c); }
+    }
+    if let Some(color) = &dark.border_subtle {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_border_subtle(c); }
+    }
+    if let Some(color) = &light.shadow {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_shadow(c); }
+    }
+    if let Some(color) = &dark.shadow {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_shadow(c); }
+    }
+    if let Some(color) = &light.bg_tab_active {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_tab_active(c); }
+    }
+    if let Some(color) = &dark.bg_tab_active {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_tab_active(c); }
+    }
+    if let Some(color) = &light.bg_tab_inactive {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_tab_inactive(c); }
+    }
+    if let Some(color) = &dark.bg_tab_inactive {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_tab_inactive(c); }
+    }
+    if let Some(color) = &light.text_tab_active {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_text_tab_active(c); }
+    }
+    if let Some(color) = &dark.text_tab_active {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_text_tab_active(c); }
+    }
+    if let Some(color) = &light.text_tab_inactive {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_text_tab_inactive(c); }
+    }
+    if let Some(color) = &dark.text_tab_inactive {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_text_tab_inactive(c); }
+    }
+    if let Some(color) = &light.border_column {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_border_column(c); }
+    }
+    if let Some(color) = &dark.border_column {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_border_column(c); }
+    }
+    if let Some(color) = &light.bg_column_active {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_column_active(c); }
+    }
+    if let Some(color) = &dark.bg_column_active {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_column_active(c); }
+    }
+    if let Some(color) = &light.bg_column_inactive {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_column_inactive(c); }
+    }
+    if let Some(color) = &dark.bg_column_inactive {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_column_inactive(c); }
+    }
+    if let Some(color) = &light.bg_inspector {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_bg_inspector(c); }
+    }
+    if let Some(color) = &dark.bg_inspector {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_bg_inspector(c); }
+    }
+    if let Some(color) = &light.border_inspector {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_border_inspector(c); }
+    }
+    if let Some(color) = &dark.border_inspector {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_border_inspector(c); }
+    }
+    if let Some(color) = &light.shadow_inspector {
+        if let Some(c) = hex_to_color(color) { tokens.set_light_shadow_inspector(c); }
+    }
+    if let Some(color) = &dark.shadow_inspector {
+        if let Some(c) = hex_to_color(color) { tokens.set_dark_shadow_inspector(c); }
+    }
+}
+
 /// Launch the main application window
 pub fn launch() -> Result<(), slint::PlatformError> {
     let window = MainWindow::new()?;
@@ -368,6 +538,12 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         }
     };
     apply_theme_colors(&window, &colors_to_apply);
+    
+    let theme_file = config::load_theme();
+    if theme_file.name.is_some() || !theme_file.light.bg_window.is_none() || !theme_file.brand.primary.is_none() {
+        log::info!("Loading custom theme from file");
+        apply_theme_file(&window, &theme_file);
+    }
 
     // Initial load
     let initial_path = browser::home_dir();
@@ -378,9 +554,23 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         Rc::new(slint::VecModel::from(default_sidebar_items())).into();
     window.set_sidebar_items(sidebar);
 
-    // Restore sidebar state from config
     window.set_sidebar_width(sidebar_init_width as f32);
     window.set_sidebar_collapsed(sidebar_init_collapsed);
+
+    let tabs_data = Rc::new(RefCell::new(vec![
+        TabItem {
+            id: "1".into(),
+            title: "Home".into(),
+            path: browser::home_dir().to_string_lossy().to_string().into(),
+        }
+    ]));
+    let active_tab_index = Rc::new(RefCell::new(0));
+
+    let tabs_vec = tabs_data.borrow();
+    let tabs_model: slint::ModelRc<TabItem> =
+        Rc::new(slint::VecModel::from(tabs_vec.clone())).into();
+    window.set_tabs(tabs_model);
+    window.set_active_tab_index(0);
 
     // ─── Callbacks ─────────────────────────────────────────────────────
 
@@ -523,6 +713,11 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         }
     });
 
+    let cfg_for_settings = current_cfg.clone();
+    let nav_for_settings = nav.clone();
+    let files_for_settings = files_cache.clone();
+    let sel_for_settings = selected_indices.clone();
+    let anc_for_settings = anchor_index.clone();
     // ─── Settings dialog ───────────────────────────────────────────────────
     let w = window.as_weak();
     window.on_settings_clicked(move || {
@@ -564,11 +759,11 @@ pub fn launch() -> Result<(), slint::PlatformError> {
                         // Save callback
                         let w2: slint::Weak<MainWindow> = window.as_weak();
                         let dialog_weak = dialog.as_weak();
-                        let cfg_ref = current_cfg.clone();
-                        let nav_ref = nav.clone();
-                        let files_ref = files_cache.clone();
-                        let sel_ref = selected_indices.clone();
-                        let anc_ref = anchor_index.clone();
+                        let cfg_ref = cfg_for_settings.clone();
+                        let nav_ref = nav_for_settings.clone();
+                        let files_ref = files_for_settings.clone();
+                        let sel_ref = sel_for_settings.clone();
+                        let anc_ref = anc_for_settings.clone();
                         dialog.on_save_config(move || {
                             let dialog = dialog_weak.upgrade().unwrap();
                             let new_cfg = config::Config {
@@ -719,6 +914,126 @@ pub fn launch() -> Result<(), slint::PlatformError> {
                 log::error!("Failed to load config: {}", e);
                 window.set_status_message(format!("Error loading config: {}", e).into());
             }
+        }
+    });
+
+    let window_tabs = window.as_weak();
+    let tabs_for_click = tabs_data.clone();
+    let active_for_click = active_tab_index.clone();
+    let nav_for_click = nav.clone();
+    let files_for_click = files_cache.clone();
+    let sel_for_click = selected_indices.clone();
+    let anc_for_click = anchor_index.clone();
+    let cfg_for_click = current_cfg.clone();
+    window.on_tab_clicked(move |index| {
+        let window = window_tabs.unwrap();
+        let index = index as i32;
+        *active_for_click.borrow_mut() = index;
+        window.set_active_tab_index(index);
+        let tabs = tabs_for_click.borrow();
+        if let Some(tab) = tabs.get(index as usize) {
+            let path = PathBuf::from(tab.path.as_str());
+            let mut nav = nav_for_click.borrow_mut();
+            nav.navigate(path.clone());
+            drop(nav);
+            load_directory(&window, &nav_for_click, &files_for_click, &sel_for_click, &anc_for_click, &path, &cfg_for_click);
+        }
+    });
+
+    let window_close = window.as_weak();
+    let active_close = active_tab_index.clone();
+    let tabs_close = tabs_data.clone();
+    let nav_close = nav.clone();
+    let files_close = files_cache.clone();
+    let sel_close = selected_indices.clone();
+    let anc_close = anchor_index.clone();
+    let cfg_close = current_cfg.clone();
+    window.on_tab_closed(move |index| {
+        let index = index as usize;
+        {
+            let mut tabs = tabs_close.borrow_mut();
+            if tabs.len() > 1 {
+                tabs.remove(index);
+            }
+        }
+        let was_active = *active_close.borrow() as usize;
+        let new_active = if was_active >= index && was_active > 0 {
+            was_active - 1
+        } else {
+            was_active
+        };
+        *active_close.borrow_mut() = new_active as i32;
+        if let Some(w) = window_close.upgrade() {
+            w.set_active_tab_index(new_active as i32);
+            let tabs = tabs_close.borrow();
+            let new_model: slint::ModelRc<TabItem> =
+                Rc::new(slint::VecModel::from(tabs.clone())).into();
+            w.set_tabs(new_model);
+            if let Some(tab) = tabs.get(new_active) {
+                let path = PathBuf::from(tab.path.as_str());
+                drop(tabs);
+                let mut nav = nav_close.borrow_mut();
+                nav.navigate(path.clone());
+                drop(nav);
+                load_directory(&w, &nav_close, &files_close, &sel_close, &anc_close, &path, &cfg_close);
+            }
+        }
+    });
+
+    let window_new = window.as_weak();
+    let active_new = active_tab_index.clone();
+    let tabs_new = tabs_data.clone();
+    let nav_new = nav.clone();
+    let files_new = files_cache.clone();
+    let sel_new = selected_indices.clone();
+    let anc_new = anchor_index.clone();
+    let cfg_new = current_cfg.clone();
+    window.on_new_tab_clicked(move || {
+        let home = browser::home_dir();
+        let new_tab = TabItem {
+            id: format!("{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis()).into(),
+            title: "Home".into(),
+            path: home.to_string_lossy().to_string().into(),
+        };
+        let new_index = {
+            let tabs = tabs_new.borrow();
+            tabs.len()
+        };
+        tabs_new.borrow_mut().push(new_tab);
+        *active_new.borrow_mut() = new_index as i32;
+        if let Some(w) = window_new.upgrade() {
+            w.set_active_tab_index(new_index as i32);
+            let tabs = tabs_new.borrow();
+            let new_model: slint::ModelRc<TabItem> =
+                Rc::new(slint::VecModel::from(tabs.clone())).into();
+            w.set_tabs(new_model);
+            drop(tabs);
+            let mut nav = nav_new.borrow_mut();
+            nav.navigate(home.clone());
+            drop(nav);
+            load_directory(&w, &nav_new, &files_new, &sel_new, &anc_new, &home, &cfg_new);
+        }
+    });
+
+    let w = window.as_weak();
+    let files_for_inspector = files_cache.clone();
+    window.on_file_selected(move |index, _ctrl, _shift| {
+        let window = w.unwrap();
+        let index = index as usize;
+        let files = files_for_inspector.borrow();
+        
+        if let Some(entry) = files.get(index) {
+            let data = InspectorData {
+                file_name: entry.name.clone().into(),
+                file_path: entry.path.to_string_lossy().to_string().into(),
+                file_size: entry.size_display().into(),
+                file_modified: entry.modified_display().into(),
+                file_created: entry.created_display().into(),
+                file_permissions: entry.permissions_display().into(),
+                is_dir: entry.is_dir,
+            };
+            window.set_inspector_data(data);
+            window.set_inspector_visible(true);
         }
     });
 

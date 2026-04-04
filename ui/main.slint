@@ -137,6 +137,16 @@ export struct SidebarItem {
     section: string,
 }
 
+export struct InspectorData {
+    file-name: string,
+    file-path: string,
+    file-size: string,
+    file-modified: string,
+    file-created: string,
+    file-permissions: string,
+    is-dir: bool,
+}
+
 component StyledButton {
     in property <string> text: "";
     in property <bool> enabled: true;
@@ -1247,6 +1257,18 @@ export component MainWindow inherits Window {
     in property <bool> show-column-type: false;
     in-out property <length> sidebar-width: 220px;
     in-out property <bool> sidebar-collapsed: false;
+
+    // Floating Inspector
+    in property <InspectorData> inspector-data: {
+        file-name: "",
+        file-path: "",
+        file-size: "",
+        file-modified: "",
+        file-created: "",
+        file-permissions: "",
+        is-dir: false,
+    };
+    in-out property <bool> inspector-visible: false;
 
 
     callback go-back();

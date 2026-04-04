@@ -144,7 +144,6 @@ pub struct UiConfig {
 
 fn default_sidebar_width() -> u32 { 220 }
 
-/// External viewer configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ViewerConfig {
     #[serde(default = "default_image_viewer")]
@@ -169,26 +168,154 @@ impl Default for ViewerConfig {
     }
 }
 
-/// Get config directory (for standard config)
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ThemeFileColors {
+    #[serde(default)]
+    pub bg_window: Option<String>,
+    #[serde(default)]
+    pub bg_surface: Option<String>,
+    #[serde(default)]
+    pub bg_sidebar: Option<String>,
+    #[serde(default)]
+    pub bg_toolbar: Option<String>,
+    #[serde(default)]
+    pub bg_header: Option<String>,
+    #[serde(default)]
+    pub bg_status: Option<String>,
+    #[serde(default)]
+    pub bg_row_alt: Option<String>,
+    #[serde(default)]
+    pub bg_hover: Option<String>,
+    #[serde(default)]
+    pub bg_selected: Option<String>,
+    #[serde(default)]
+    pub bg_input: Option<String>,
+    #[serde(default)]
+    pub text_primary: Option<String>,
+    #[serde(default)]
+    pub text_secondary: Option<String>,
+    #[serde(default)]
+    pub text_tertiary: Option<String>,
+    #[serde(default)]
+    pub text_on_primary: Option<String>,
+    #[serde(default)]
+    pub border: Option<String>,
+    #[serde(default)]
+    pub border_subtle: Option<String>,
+    #[serde(default)]
+    pub shadow: Option<String>,
+    #[serde(default)]
+    pub bg_tab_active: Option<String>,
+    #[serde(default)]
+    pub bg_tab_inactive: Option<String>,
+    #[serde(default)]
+    pub text_tab_active: Option<String>,
+    #[serde(default)]
+    pub text_tab_inactive: Option<String>,
+    #[serde(default)]
+    pub border_column: Option<String>,
+    #[serde(default)]
+    pub bg_column_active: Option<String>,
+    #[serde(default)]
+    pub bg_column_inactive: Option<String>,
+    #[serde(default)]
+    pub bg_inspector: Option<String>,
+    #[serde(default)]
+    pub border_inspector: Option<String>,
+    #[serde(default)]
+    pub shadow_inspector: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Typography {
+    #[serde(default)]
+    pub font_xs: Option<f32>,
+    #[serde(default)]
+    pub font_sm: Option<f32>,
+    #[serde(default)]
+    pub font_md: Option<f32>,
+    #[serde(default)]
+    pub font_lg: Option<f32>,
+    #[serde(default)]
+    pub font_xl: Option<f32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct BrandColors {
+    #[serde(default)]
+    pub primary: Option<String>,
+    #[serde(default)]
+    pub secondary: Option<String>,
+    #[serde(default)]
+    pub accent: Option<String>,
+    #[serde(default)]
+    pub primary_soft: Option<String>,
+    #[serde(default)]
+    pub primary_hover: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Theme {
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub light: ThemeFileColors,
+    #[serde(default)]
+    pub dark: ThemeFileColors,
+    #[serde(default)]
+    pub brand: BrandColors,
+    #[serde(default)]
+    pub typography: Typography,
+}
+
 pub fn config_dir() -> PathBuf {
     dirs::config_dir()
         .unwrap_or_else(|| PathBuf::from("~/.config"))
         .join("felix")
 }
 
-/// Get the standard config path (~/.config/felix/config.toml)
+pub fn theme_toml_path() -> PathBuf {
+    config_dir().join("theme.toml")
+}
+
+pub fn theme_json_path() -> PathBuf {
+    config_dir().join("theme.json")
+}
+
+pub fn load_theme_toml() -> Result<Theme, Box<dyn std::error::Error>> {
+    let path = theme_toml_path();
+    if !path.exists() {
+        return Ok(Theme::default());
+    }
+    let content = std::fs::read_to_string(&path)?;
+    let theme: Theme = toml::from_str(&content)?;
+    Ok(theme)
+}
+
+pub fn load_theme_json() -> Result<Theme, Box<dyn std::error::Error>> {
+    let path = theme_json_path();
+    if !path.exists() {
+        return Ok(Theme::default());
+    }
+    let content = std::fs::read_to_string(&path)?;
+    let theme: Theme = serde_json::from_str(&content)?;
+    Ok(theme)
+}
+
+pub fn load_theme() -> Theme {
+    load_theme_toml().or_else(|_| load_theme_json()).unwrap_or_default()
+}
+
 pub fn toml_config_path() -> PathBuf {
     config_dir().join("config.toml")
 }
 
-/// Get the user-requested config path (~/.config/felix.config.yml)
 pub fn config_path() -> PathBuf {
     dirs::config_dir()
         .unwrap_or_else(|| PathBuf::from("~/.config"))
         .join("felix.config.yml")
 }
 
-/// Load config from YAML file
 pub fn load() -> Result<Config, Box<dyn std::error::Error>> {
     let path = config_path();
     if !path.exists() {
@@ -199,7 +326,6 @@ pub fn load() -> Result<Config, Box<dyn std::error::Error>> {
     Ok(config)
 }
 
-/// Save config to YAML file
 pub fn save(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
     let path = config_path();
     let content = serde_yaml::to_string(config)?;
@@ -207,12 +333,10 @@ pub fn save(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-/// Get config as YAML string for editing
 pub fn to_yaml(config: &Config) -> Result<String, Box<dyn std::error::Error>> {
     Ok(serde_yaml::to_string(config)?)
 }
 
-/// Parse config from YAML string
 pub fn from_yaml(yaml: &str) -> Result<Config, Box<dyn std::error::Error>> {
     let config: Config = serde_yaml::from_str(yaml)?;
     Ok(config)
@@ -248,7 +372,6 @@ fn default_config() -> Config {
     }
 }
 
-/// Initialize config file if it doesn't exist
 pub fn init() -> Result<Config, Box<dyn std::error::Error>> {
     let path = config_path();
     if !path.exists() {

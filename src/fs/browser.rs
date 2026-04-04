@@ -2,6 +2,8 @@
 
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 
 #[derive(Debug, Clone)]
 pub struct FileEntry {
@@ -91,6 +93,61 @@ impl FileEntry {
                 }
             }
             None => "--".to_string(),
+        }
+    }
+
+    pub fn created_display(&self) -> String {
+        if let Ok(metadata) = std::fs::metadata(&self.path) {
+            if let Ok(created) = metadata.created() {
+                if let Ok(duration) = created.duration_since(SystemTime::UNIX_EPOCH) {
+                    let secs = duration.as_secs();
+                    let days = secs / 86400;
+                    let years = 1970 + days / 365;
+                    let remaining_days = days % 365;
+                    let months = remaining_days / 30;
+                    let day = (remaining_days % 30) + 1;
+                    let hours = (secs % 86400) / 3600;
+                    let minutes = (secs % 3600) / 60;
+                    return format!(
+                        "{:04}-{:02}-{:02} {:02}:{:02}",
+                        years,
+                        months + 1,
+                        day,
+                        hours,
+                        minutes
+                    );
+                }
+            }
+        }
+        "--".to_string()
+    }
+
+    pub fn permissions_display(&self) -> String {
+        if let Ok(metadata) = std::fs::metadata(&self.path) {
+            let mode = metadata.permissions().mode();
+            let file_type = if metadata.is_dir() { 'd' } else { '-' };
+            
+            let owner_read = if mode & 0o400 != 0 { 'r' } else { '-' };
+            let owner_write = if mode & 0o200 != 0 { 'w' } else { '-' };
+            let owner_exec = if mode & 0o100 != 0 { 'x' } else { '-' };
+            
+            let group_read = if mode & 0o040 != 0 { 'r' } else { '-' };
+            let group_write = if mode & 0o020 != 0 { 'w' } else { '-' };
+            let group_exec = if mode & 0o010 != 0 { 'x' } else { '-' };
+            
+            let other_read = if mode & 0o004 != 0 { 'r' } else { '-' };
+            let other_write = if mode & 0o002 != 0 { 'w' } else { '-' };
+            let other_exec = if mode & 0o001 != 0 { 'x' } else { '-' };
+            
+            format!(
+                "{}{}{}{}{}{}{}{}{}{}",
+                file_type,
+                owner_read, owner_write, owner_exec,
+                group_read, group_write, group_exec,
+                other_read, other_write, other_exec
+            )
+        } else {
+            "----------".to_string()
         }
     }
 }
