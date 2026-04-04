@@ -22,6 +22,16 @@ export global Tokens {
     in-out property <color> light-border: #d8d8d0;
     in-out property <color> light-border-subtle: #e4e4dc;
     in-out property <color> light-shadow: #00000010;
+    in-out property <color> light-bg-tab-active: #fafaf5;
+    in-out property <color> light-bg-tab-inactive: #eeeee8;
+    in-out property <color> light-text-tab-active: #3a3a3c;
+    in-out property <color> light-text-tab-inactive: #8a8a8e;
+    in-out property <color> light-border-column: #d8d8d0;
+    in-out property <color> light-bg-column-active: #fafaf5;
+    in-out property <color> light-bg-column-inactive: #f5f5f0;
+    in-out property <color> light-bg-inspector: #fafaf5;
+    in-out property <color> light-border-inspector: #d8d8d0;
+    in-out property <color> light-shadow-inspector: #00000020;
 
     // Dark mode colors - soft navy darks (Catppuccin/Tokyo Night inspired) (in-out for runtime overrides from Rust)
     in-out property <color> dark-bg-window: #1a1b26;
@@ -41,6 +51,16 @@ export global Tokens {
     in-out property <color> dark-border: #2a2b3d;
     in-out property <color> dark-border-subtle: #22233a;
     in-out property <color> dark-shadow: #00000040;
+    in-out property <color> dark-bg-tab-active: #1e1f2e;
+    in-out property <color> dark-bg-tab-inactive: #161721;
+    in-out property <color> dark-text-tab-active: #c0caf5;
+    in-out property <color> dark-text-tab-inactive: #565f89;
+    in-out property <color> dark-border-column: #2a2b3d;
+    in-out property <color> dark-bg-column-active: #1e1f2e;
+    in-out property <color> dark-bg-column-inactive: #1a1b26;
+    in-out property <color> dark-bg-inspector: #1e1f2e;
+    in-out property <color> dark-border-inspector: #2a2b3d;
+    in-out property <color> dark-shadow-inspector: #00000080;
 
     // Active colors based on theme mode (with custom overrides via MainWindow properties)
     out property <color> bg-window: Tokens.theme-mode == 1 ? Tokens.light-bg-window : Tokens.dark-bg-window;
@@ -48,6 +68,16 @@ export global Tokens {
     out property <color> bg-sidebar: Tokens.theme-mode == 1 ? Tokens.light-bg-sidebar : Tokens.dark-bg-sidebar;
     out property <color> bg-toolbar: Tokens.theme-mode == 1 ? Tokens.light-bg-toolbar : Tokens.dark-bg-toolbar;
     out property <color> bg-header: Tokens.theme-mode == 1 ? Tokens.light-bg-header : Tokens.dark-bg-header;
+    out property <color> bg-tab-active: Tokens.theme-mode == 1 ? Tokens.light-bg-tab-active : Tokens.dark-bg-tab-active;
+    out property <color> bg-tab-inactive: Tokens.theme-mode == 1 ? Tokens.light-bg-tab-inactive : Tokens.dark-bg-tab-inactive;
+    out property <color> text-tab-active: Tokens.theme-mode == 1 ? Tokens.light-text-tab-active : Tokens.dark-text-tab-active;
+    out property <color> text-tab-inactive: Tokens.theme-mode == 1 ? Tokens.light-text-tab-inactive : Tokens.dark-text-tab-inactive;
+    out property <color> border-column: Tokens.theme-mode == 1 ? Tokens.light-border-column : Tokens.dark-border-column;
+    out property <color> bg-column-active: Tokens.theme-mode == 1 ? Tokens.light-bg-column-active : Tokens.dark-bg-column-active;
+    out property <color> bg-column-inactive: Tokens.theme-mode == 1 ? Tokens.light-bg-column-inactive : Tokens.dark-bg-column-inactive;
+    out property <color> bg-inspector: Tokens.theme-mode == 1 ? Tokens.light-bg-inspector : Tokens.dark-bg-inspector;
+    out property <color> border-inspector: Tokens.theme-mode == 1 ? Tokens.light-border-inspector : Tokens.dark-border-inspector;
+    out property <color> shadow-inspector: Tokens.theme-mode == 1 ? Tokens.light-shadow-inspector : Tokens.dark-shadow-inspector;
     out property <color> bg-status: Tokens.theme-mode == 1 ? Tokens.light-bg-status : Tokens.dark-bg-status;
     out property <color> bg-row-alt: Tokens.theme-mode == 1 ? Tokens.light-bg-row-alt : Tokens.dark-bg-row-alt;
     out property <color> bg-hover: Tokens.theme-mode == 1 ? Tokens.light-bg-hover : Tokens.dark-bg-hover;
@@ -82,6 +112,12 @@ export global Tokens {
     out property <int> font-weight-medium: 500;
     out property <int> font-weight-semibold: 600;
     out property <int> font-weight-bold: 700;
+}
+
+export struct TabItem {
+    id: string,
+    title: string,
+    path: string,
 }
 
 export struct FileEntry {
@@ -367,6 +403,10 @@ component Toolbar {
     callback go-back();
     callback go-forward();
     callback go-up();
+    callback tab-clicked(int);
+    callback tab-closed(int);
+    callback new-tab-clicked();
+
     callback path-entered(string);
     callback search-changed(string);
     callback settings-clicked();
@@ -471,6 +511,9 @@ component FileList {
     in property <bool> show-column-modified: true;
     in property <bool> show-column-created: true;
     in property <bool> show-column-type: false;
+    in-out property <length> sidebar-width: 220px;
+    in-out property <bool> sidebar-collapsed: false;
+
 
     callback file-selected(int, bool, bool);  // index, ctrl-pressed, shift-pressed
     callback file-activated(int);
@@ -1092,6 +1135,78 @@ component DetailsPanel {
     }
 }
 
+export component TabBar inherits Rectangle {
+    in property <[TabItem]> tabs;
+    in property <int> active-index;
+    callback tab-clicked(int);
+    callback tab-closed(int);
+    callback new-tab();
+    height: 32px;
+    background: Tokens.bg-toolbar;
+    HorizontalBox {
+        padding: 0;
+        spacing: 4px;
+        for tab[i] in tabs : Rectangle {
+            width: 150px;
+            background: i == active-index ? Tokens.bg-tab-active : Tokens.bg-tab-inactive;
+            border-radius: 4px;
+            HorizontalBox {
+                padding-left: 8px;
+                padding-right: 8px;
+                spacing: 4px;
+                Text {
+                    text: tab.title;
+                    color: i == active-index ? Tokens.text-tab-active : Tokens.text-tab-inactive;
+                    font-size: Tokens.font-sm;
+                    font-weight: i == active-index ? Tokens.font-weight-medium : Tokens.font-weight-regular;
+                    vertical-alignment: center;
+                    horizontal-alignment: left;
+                    overflow: elide;
+                }
+                Rectangle {
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 8px;
+                    background: close-ta.has-hover ? Tokens.bg-hover : transparent;
+                    Text {
+                        text: "×";
+                        color: i == active-index ? Tokens.text-tab-active : Tokens.text-tab-inactive;
+                        font-size: 12px;
+                        vertical-alignment: center;
+                        horizontal-alignment: center;
+                    }
+                    close-ta := TouchArea {
+                        clicked => { root.tab-closed(i); }
+                    }
+                }
+            }
+            TouchArea {
+                width: parent.width - 24px;
+                x: 0;
+                clicked => { root.tab-clicked(i); }
+            }
+        }
+        Rectangle {
+            width: 32px;
+            height: 32px;
+            background: new-ta.has-hover ? Tokens.bg-hover : transparent;
+            Text {
+                text: "+";
+                color: Tokens.text-secondary;
+                font-size: 18px;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+            }
+            new-ta := TouchArea {
+                clicked => { root.new-tab(); }
+            }
+        }
+        Rectangle {
+            horizontal-stretch: 1;
+        }
+    }
+}
+
 export component MainWindow inherits Window {
     title: "felix";
     min-width: 640px;
@@ -1100,6 +1215,8 @@ export component MainWindow inherits Window {
     preferred-height: 640px;
     background: Tokens.bg-window;
 
+    in property <[TabItem]> tabs: [{id: "1", title: "Home", path: "/home"}];
+    in property <int> active-tab-index: 0;
     in property <string> current-path: "/home";
     in property <[FileEntry]> files: [];
     in property <[SidebarItem]> sidebar-items: [];
@@ -1128,10 +1245,17 @@ export component MainWindow inherits Window {
     in property <bool> show-column-modified: true;
     in property <bool> show-column-created: true;
     in property <bool> show-column-type: false;
+    in-out property <length> sidebar-width: 220px;
+    in-out property <bool> sidebar-collapsed: false;
+
 
     callback go-back();
     callback go-forward();
     callback go-up();
+    callback tab-clicked(int);
+    callback tab-closed(int);
+    callback new-tab-clicked();
+
     callback path-entered(string);
     callback search-changed(string);
     callback sidebar-item-clicked(string);
@@ -1145,6 +1269,13 @@ export component MainWindow inherits Window {
     callback shortcuts-clicked();
 
     VerticalBox {
+        TabBar {
+            tabs: root.tabs;
+            active-index: root.active-tab-index;
+            tab-clicked(i) => { root.tab-clicked(i) }
+            tab-closed(i) => { root.tab-closed(i) }
+            new-tab => { root.new-tab-clicked() }
+        }
         spacing: 0;
 
         Toolbar {

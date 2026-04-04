@@ -72,6 +72,26 @@ pub struct ThemeColors {
     pub border: Option<String>,
     #[serde(default)]
     pub border_subtle: Option<String>,
+    #[serde(default)]
+    pub bg_tab_active: Option<String>,
+    #[serde(default)]
+    pub bg_tab_inactive: Option<String>,
+    #[serde(default)]
+    pub text_tab_active: Option<String>,
+    #[serde(default)]
+    pub text_tab_inactive: Option<String>,
+    #[serde(default)]
+    pub border_column: Option<String>,
+    #[serde(default)]
+    pub bg_column_active: Option<String>,
+    #[serde(default)]
+    pub bg_column_inactive: Option<String>,
+    #[serde(default)]
+    pub bg_inspector: Option<String>,
+    #[serde(default)]
+    pub border_inspector: Option<String>,
+    #[serde(default)]
+    pub shadow_inspector: Option<String>,
 }
 
 fn default_theme_mode() -> ThemeMode { ThemeMode::System }
@@ -116,7 +136,13 @@ pub struct UiConfig {
     pub window_width: Option<u32>,
     #[serde(default)]
     pub window_height: Option<u32>,
+    #[serde(default = "default_sidebar_width")]
+    pub sidebar_width: u32,
+    #[serde(default)]
+    pub sidebar_collapsed: bool,
 }
+
+fn default_sidebar_width() -> u32 { 220 }
 
 /// External viewer configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]

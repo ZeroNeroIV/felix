@@ -227,6 +227,67 @@ fn apply_theme_colors(window: &MainWindow, theme_colors: &config::ThemeColors) {
             tokens.set_dark_border_subtle(c);
         }
     }
+    if let Some(color) = &theme_colors.bg_tab_active {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_tab_active(c);
+            tokens.set_dark_bg_tab_active(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_tab_inactive {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_tab_inactive(c);
+            tokens.set_dark_bg_tab_inactive(c);
+        }
+    }
+    if let Some(color) = &theme_colors.text_tab_active {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_text_tab_active(c);
+            tokens.set_dark_text_tab_active(c);
+        }
+    }
+    if let Some(color) = &theme_colors.text_tab_inactive {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_text_tab_inactive(c);
+            tokens.set_dark_text_tab_inactive(c);
+        }
+    }
+    if let Some(color) = &theme_colors.border_column {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_border_column(c);
+            tokens.set_dark_border_column(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_column_active {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_column_active(c);
+            tokens.set_dark_bg_column_active(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_column_inactive {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_column_inactive(c);
+            tokens.set_dark_bg_column_inactive(c);
+        }
+    }
+    if let Some(color) = &theme_colors.bg_inspector {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_bg_inspector(c);
+            tokens.set_dark_bg_inspector(c);
+        }
+    }
+    if let Some(color) = &theme_colors.border_inspector {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_border_inspector(c);
+            tokens.set_dark_border_inspector(c);
+        }
+    }
+    if let Some(color) = &theme_colors.shadow_inspector {
+        if let Some(c) = hex_to_color(color) {
+            tokens.set_light_shadow_inspector(c);
+            tokens.set_dark_shadow_inspector(c);
+
+        }
+    }
 }
 
 /// Launch the main application window
@@ -278,6 +339,8 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         Rc::new(RefCell::new(None));
 
     // Current config (shared, mutable)
+    let sidebar_init_width = initial_cfg.ui.sidebar_width;
+    let sidebar_init_collapsed = initial_cfg.ui.sidebar_collapsed;
     let current_cfg: Rc<RefCell<config::Config>> = Rc::new(RefCell::new(initial_cfg));
 
     let theme_mode = current_cfg.borrow().theme.mode.clone();
@@ -315,6 +378,10 @@ pub fn launch() -> Result<(), slint::PlatformError> {
         Rc::new(slint::VecModel::from(default_sidebar_items())).into();
     window.set_sidebar_items(sidebar);
 
+    // Restore sidebar state from config
+    window.set_sidebar_width(sidebar_init_width as f32);
+    window.set_sidebar_collapsed(sidebar_init_collapsed);
+
     // ─── Callbacks ─────────────────────────────────────────────────────
 
     let w = window.as_weak();
@@ -334,241 +401,10 @@ pub fn launch() -> Result<(), slint::PlatformError> {
     });
 
     let w = window.as_weak();
-    let nav_ref = nav.clone();
-    let files_ref = files_cache.clone();
-    let sel_fwd = selected_indices.clone();
-    let anc_fwd = anchor_index.clone();
-    let cfg_fwd = current_cfg.clone();
-    window.on_go_forward(move || {
+    window.on_details_panel_toggle(move || {
         let window = w.unwrap();
-        let mut nav = nav_ref.borrow_mut();
-        if let Some(path) = nav.go_forward() {
-            let path = path.clone();
-            drop(nav);
-            load_directory(&window, &nav_ref, &files_ref, &sel_fwd, &anc_fwd, &path, &cfg_fwd);
-        }
+        window.set_show_details_panel(!window.get_show_details_panel());
     });
-
-    let w = window.as_weak();
-    let nav_ref = nav.clone();
-    let files_ref = files_cache.clone();
-    let sel_up = selected_indices.clone();
-    let anc_up = anchor_index.clone();
-    let cfg_up = current_cfg.clone();
-    window.on_go_up(move || {
-        let window = w.unwrap();
-        let current = nav_ref.borrow().current().clone();
-        if let Some(parent) = browser::parent_dir(&current) {
-            load_directory(&window, &nav_ref, &files_ref, &sel_up, &anc_up, &parent, &cfg_up);
-        }
-    });
-
-    let w = window.as_weak();
-    let nav_ref = nav.clone();
-    let files_ref = files_cache.clone();
-    let sel_path = selected_indices.clone();
-    let anc_path = anchor_index.clone();
-    let cfg_path = current_cfg.clone();
-    window.on_path_entered(move |path_str| {
-        let window = w.unwrap();
-        let path = PathBuf::from(path_str.to_string());
-        if path.is_dir() {
-            load_directory(&window, &nav_ref, &files_ref, &sel_path, &anc_path, &path, &cfg_path);
-        }
-    });
-
-    let w = window.as_weak();
-    let nav_ref = nav.clone();
-    let files_ref = files_cache.clone();
-    let sel_side = selected_indices.clone();
-    let anc_side = anchor_index.clone();
-    let cfg_side = current_cfg.clone();
-    window.on_sidebar_item_clicked(move |path_str| {
-        let window = w.unwrap();
-        let path = PathBuf::from(path_str.to_string());
-        load_directory(&window, &nav_ref, &files_ref, &sel_side, &anc_side, &path, &cfg_side);
-    });
-
-    let w = window.as_weak();
-    let nav_for_activated = nav.clone();
-    let files_ref = files_cache.clone();
-    let sel_act = selected_indices.clone();
-    let anc_act = anchor_index.clone();
-    let cfg_act = current_cfg.clone();
-    window.on_file_activated(move |index| {
-        let window = w.unwrap();
-        let files = files_ref.borrow();
-        if let Some(entry) = files.get(index as usize) {
-            if entry.is_dir {
-                let path = entry.path.clone();
-                drop(files);
-                let nav_ref2 = nav_for_activated.clone();
-                let files_ref2 = files_ref.clone();
-                let sel_act2 = sel_act.clone();
-                let anc_act2 = anc_act.clone();
-                let cfg_ref2 = cfg_act.clone();
-                load_directory(&window, &nav_ref2, &files_ref2, &sel_act2, &anc_act2, &path, &cfg_ref2);
-            } else {
-                let path = entry.path.clone();
-                drop(files);
-                let file_type = viewers::detect_file_type(&path);
-                match config::load() {
-                    Ok(cfg) => {
-                        match viewers::launch_viewer(file_type, &path, &cfg.viewers) {
-                            Ok(_) => {
-                                let viewer_name = match file_type {
-                                    FileType::Image => &cfg.viewers.image_viewer,
-                                    FileType::Video => &cfg.viewers.video_viewer,
-                                    FileType::Pdf => &cfg.viewers.pdf_viewer,
-                                    _ => "file",
-                                };
-                                window.set_status_message(format!("Opening with {}...", viewer_name).into());
-                            }
-                            Err(e) => {
-                                window.set_status_message(format!("Error: {}", e).into());
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        window.set_status_message(format!("Error loading config: {}", e).into());
-                    }
-                }
-            }
-        }
-    });
-
-    let sel_indices = selected_indices.clone();
-    let anchor = anchor_index.clone();
-    let files_sel = files_cache.clone();
-    let w = window.as_weak();
-    window.on_file_selected(move |index, ctrl, shift| {
-        let window = w.unwrap();
-        update_selection(
-            &window,
-            index as usize,
-            ctrl,
-            shift,
-            &sel_indices,
-            &anchor,
-            &files_sel,
-        );
-    });
-
-fn update_selection(
-    window: &MainWindow,
-    clicked_index: usize,
-    ctrl: bool,
-    shift: bool,
-    selected_indices: &Rc<RefCell<HashSet<usize>>>,
-    anchor_index: &Rc<RefCell<Option<usize>>>,
-    files_cache: &Rc<RefCell<Vec<browser::FileEntry>>>,
-) {
-    let mut indices = selected_indices.borrow_mut();
-    let mut anchor = anchor_index.borrow_mut();
-    let files = files_cache.borrow();
-    let file_count = files.len();
-    
-    if shift {
-        // Shift+click: select range from anchor to clicked
-        let anchor_pos = anchor.as_ref().unwrap_or(&clicked_index);
-        let start = (*anchor_pos).min(clicked_index);
-        let end = (*anchor_pos).max(clicked_index);
-        
-        if ctrl {
-            // Ctrl+Shift: extend range (add to existing selection)
-            for i in start..=end {
-                indices.insert(i);
-            }
-        } else {
-            // Shift only: new range selection
-            indices.clear();
-            for i in start..=end {
-                indices.insert(i);
-            }
-        }
-    } else if ctrl {
-        // Ctrl+click: toggle individual selection
-        if indices.contains(&clicked_index) {
-            indices.remove(&clicked_index);
-        } else {
-            indices.insert(clicked_index);
-        }
-        *anchor = Some(clicked_index);
-    } else {
-        // Plain click: single selection
-        indices.clear();
-        indices.insert(clicked_index);
-        *anchor = Some(clicked_index);
-    }
-    
-    // Update UI - convert files with selection state
-    let selected_vec: Vec<i32> = indices.iter().map(|&i| i as i32).collect();
-    let slint_files: Vec<FileEntry> = files
-        .iter()
-        .enumerate()
-        .map(|(i, e)| to_slint_entry(e, indices.contains(&i)))
-        .collect();
-    
-    let model: slint::ModelRc<FileEntry> =
-        Rc::new(slint::VecModel::from(slint_files)).into();
-    window.set_files(model);
-    window.set_selected_indices(
-        Rc::new(slint::VecModel::from(selected_vec)).into()
-    );
-    
-    let count = indices.len();
-    window.set_status_message(
-        format!("{} selected", count).into()
-    );
-    
-    if let Some(first_selected) = indices.iter().min() {
-        if let Some(entry) = files.get(*first_selected) {
-            window.set_selected_file_path(entry.path.to_string_lossy().to_string().into());
-            window.set_selected_file_name(entry.name.clone().into());
-            window.set_selected_file_size(entry.size_display().into());
-            window.set_selected_file_modified(entry.modified_display().into());
-            window.set_selected_file_created("--".into());
-            
-            let mime = if entry.is_dir {
-                "directory".to_string()
-            } else {
-                entry.path.extension()
-                    .and_then(|e| e.to_str())
-                    .map(|e| match e {
-                        "pdf" => "application/pdf",
-                        "md" | "markdown" => "text/markdown",
-                        "txt" => "text/plain",
-                        "jpg" | "jpeg" => "image/jpeg",
-                        "png" => "image/png",
-                        "gif" => "image/gif",
-                        "svg" => "image/svg+xml",
-                        "mp4" => "video/mp4",
-                        "mkv" => "video/x-matroska",
-                        "mp3" => "audio/mpeg",
-                        "wav" => "audio/wav",
-                        "zip" => "application/zip",
-                        "tar" => "application/x-tar",
-                        "gz" => "application/gzip",
-                        "rs" => "text/x-rust",
-                        "py" => "text/x-python",
-                        "js" => "text/javascript",
-                        "ts" => "text/typescript",
-                        "json" => "application/json",
-                        "yaml" | "yml" => "application/x-yaml",
-                        "toml" => "application/toml",
-                        _ => "application/octet-stream",
-                    })
-                    .unwrap_or("application/octet-stream")
-                    .to_string()
-            };
-            window.set_selected_file_mime(mime.into());
-            window.set_selected_file_is_dir(entry.is_dir);
-            window.set_show_details_panel(true);
-        }
-    } else {
-        window.set_show_details_panel(false);
-    }
-}
 
     let w = window.as_weak();
     let nav_ref = nav.clone();
@@ -770,7 +606,18 @@ fn update_selection(
                                     show_devices: dialog.get_show_devices(),
                                     show_bookmarks: dialog.get_show_bookmarks(),
                                 },
-                                ui: cfg_ref.borrow().ui.clone(),
+                                ui: {
+                                    let w_ui = w2.upgrade();
+                                    let sidebar_w = w_ui.as_ref().map(|w| w.get_sidebar_width() as u32).unwrap_or(220);
+                                    let sidebar_coll = w_ui.as_ref().map(|w| w.get_sidebar_collapsed()).unwrap_or(false);
+                                    config::UiConfig {
+                                        default_path: cfg_ref.borrow().ui.default_path.clone(),
+                                        window_width: cfg_ref.borrow().ui.window_width,
+                                        window_height: cfg_ref.borrow().ui.window_height,
+                                        sidebar_width: sidebar_w,
+                                        sidebar_collapsed: sidebar_coll,
+                                    }
+                                },
                                 viewers: config::ViewerConfig {
                                     image_viewer: dialog.get_image_viewer().to_string(),
                                     video_viewer: dialog.get_video_viewer().to_string(),
@@ -785,6 +632,40 @@ fn update_selection(
                                 }
                             } else {
                                 *cfg_ref.borrow_mut() = new_cfg.clone();
+                                
+                                let colors_to_apply = match new_cfg.theme.mode {
+                                    config::ThemeMode::Light => new_cfg.theme.light_colors.clone(),
+                                    config::ThemeMode::Dark => new_cfg.theme.dark_colors.clone(),
+                                    config::ThemeMode::System => {
+                                        #[cfg(target_os = "macos")]
+                                        {
+                                            use std::process::Command;
+                                            if let Ok(output) = Command::new("defaults").args(["read", "-g", "AppleInterfaceStyle"]).output() {
+                                                if output.stdout.trim().to_lowercase() == "dark" {
+                                                    new_cfg.theme.dark_colors.clone()
+                                                } else {
+                                                    new_cfg.theme.light_colors.clone()
+                                                }
+                                            } else {
+                                                new_cfg.theme.light_colors.clone()
+                                            }
+                                        }
+                                        #[cfg(not(target_os = "macos"))]
+                                        {
+                                            new_cfg.theme.light_colors.clone()
+                                        }
+                                    }
+                                };
+                                if let Some(w) = w2.upgrade() {
+                                    apply_theme_colors(&w, &colors_to_apply);
+                                    let tokens = Tokens::get(&w);
+                                    let theme_mode_value = match new_cfg.theme.mode {
+                                        config::ThemeMode::System => 0,
+                                        config::ThemeMode::Light => 1,
+                                        config::ThemeMode::Dark => 2,
+                                    };
+                                    tokens.set_theme_mode(theme_mode_value);
+                                }
                                 
                                 let current_path = nav_ref.borrow().current().clone();
                                 load_directory(
